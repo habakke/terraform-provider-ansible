@@ -17,10 +17,10 @@ make test
 ```
 
 To run terraform acceptance tests, the `TF_ACC` env variable must be set to true before making the
-`test` make target, if not the terrafor acceptance tests will be skipped.
+`test` make target, or the `testacc` make target can be used
 
 ```shell
-TF_ACC=true make test
+make testacc
 ```
 
 ## How to use
@@ -65,4 +65,3 @@ resource "ansible_host" "k3s-master-1" {
 ## TODO
 
 * Make provider available publicly at registry.hashicorp.com (https://www.terraform.io/guides/terraform-provider-development-program.html)
-* Add to Github CI/CD

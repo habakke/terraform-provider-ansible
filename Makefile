@@ -9,11 +9,11 @@ prepare:
 
 build-dev:
 	@[ "${version}" ] || ( echo ">> please provide version=vX.Y.Z"; exit 1 )
-	go build -o ~/.terraform.d/plugins/$(NAME)_${version} ./cmd/provider
+	go build -o ~/.terraform.d/plugins/$(NAME)_${version} .
 
 build: prepare
 	@[ "${version}" ] || ( echo ">> please provide version=vX.Y.Z"; exit 1 )
-	go build -o $(BUILD_DIR)/$(NAME)_${version} ./cmd/provider
+	go build -o $(BUILD_DIR)/$(NAME)_${version} .
 
 install: build
 	mv $(NAME) ~/.terraform.d/plugins/github.com/habakke/$(NAME)/${version}/darwin_amd64

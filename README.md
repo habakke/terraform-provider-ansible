@@ -3,26 +3,6 @@ This documents describes how to build and use the ansible terraform provider.
 The provider lets you define ansible resources in terraform code, which generates
 a inventory to be consumed by ansible during provisioning.
 
-## How to build
-
-```shell
-make build-dev version=v0.0.1
-```
-
-## Running tests
-To run the internal unit tests run test `test` make target
-
-```shell
-make test
-```
-
-To run terraform acceptance tests, the `TF_ACC` env variable must be set to true before making the
-`test` make target, or the `testacc` make target can be used
-
-```shell
-make testacc
-```
-
 ## How to use
 
 ```terraform
@@ -60,6 +40,26 @@ resource "ansible_host" "k3s-master-1" {
   inventory = ansible_inventory.cluster.id
   group = ansible_group.master.id
 }
+```
+
+## How to build
+
+```shell
+make build-dev version=v0.0.1
+```
+
+## Running tests
+To run the internal unit tests run test `test` make target
+
+```shell
+make test
+```
+
+To run terraform acceptance tests, the `TF_ACC` env variable must be set to true before making the
+`test` make target, or the `testacc` make target can be used
+
+```shell
+make testacc
 ```
 
 ## TODO

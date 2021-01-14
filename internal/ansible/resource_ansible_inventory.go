@@ -23,7 +23,6 @@ func ansibleInventoryResourceQuery() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"groupvars": {
 				Type:         schema.TypeString,
-				ForceNew:     true,
 				Required:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("GROUP_VARS", nil),
 				Description:  "Ansible inventory group vars",

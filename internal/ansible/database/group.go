@@ -98,7 +98,7 @@ func (s Group) MarshalJSON() ([]byte, error) {
 		Entries: entriesMapToStringMap(s.entries),
 	}
 
-	if jsonString, err := json.Marshal(aux); err != nil {
+	if jsonString, err := json.MarshalIndent(aux, "", "\t"); err != nil {
 		return nil, err
 	} else {
 		return jsonString, err

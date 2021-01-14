@@ -84,7 +84,7 @@ func (s *Database) AllGroups() *map[string]Group {
 
 func (s *Database) Commit() error {
 	// Commit JSON to disk
-	if jsonString, err := json.Marshal(s.groups); err != nil {
+	if jsonString, err := json.MarshalIndent(s.groups, "", "\t"); err != nil {
 		return errors.New(fmt.Sprintf("failed to serialize database to '%s': %e", s.dbFile, err))
 	} else {
 		if err := ioutil.WriteFile(s.dbFile, jsonString, os.ModePerm); err != nil {

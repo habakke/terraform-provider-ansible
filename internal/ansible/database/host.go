@@ -41,7 +41,7 @@ func (s Host) MarshalJSON() ([]byte, error) {
 		Name: s.name,
 	}
 
-	if jsonString, err := json.Marshal(aux); err != nil {
+	if jsonString, err := json.MarshalIndent(aux, "", "\t"); err != nil {
 		return nil, err
 	} else {
 		return jsonString, err

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/database"
-	"github.com/habakke/terraform-ansible-provider/internal/ansible/inventory"
+	"github.com/habakke/terraform-ansible-provider/internal/util"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"time"
@@ -17,9 +17,9 @@ func ansibleGroupResourceQuery() *schema.Resource {
 		Update: ansibleGroupResourceQueryUpdate,
 		Delete: ansibleGroupResourceQueryDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Update: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(10 * time.Second),
+			Update: schema.DefaultTimeout(10 * time.Second),
+			Delete: schema.DefaultTimeout(10 * time.Second),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -37,14 +37,28 @@ func ansibleGroupResourceQuery() *schema.Resource {
 }
 
 func ansibleGroupResourceQueryCreate(d *schema.ResourceData, meta interface{}) error {
+	conf := meta.(ProviderConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	name := d.Get("name").(string)
 	inventoryRef := d.Get("inventory").(string)
-	i := inventory.LoadFromId(inventoryRef)
-	db := database.NewDatabase(i.GetDatabasePath())
 
+	// create a logger for this function
+	logger, _ := util.CreateSubLogger("resource_group_create")
+	logger.Debug().Str("name", name).Str("inventory", inventoryRef).Msg("invoking creation of group")
+
+	i, err := conf.Inventories.GetOrCreate(inventoryRef)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to load inventory")
+		return fmt.Errorf("failed to load inventory '%s': %e", inventoryRef, err)
+	}
+	conf.Mutex.Lock()
+	db, err := i.GetAndLoadDatabase()
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to load database")
+		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
+	}
 	g := database.NewGroup(name)
 	if err := db.AddGroup(*g); err != nil {
 		return fmt.Errorf("failed to add group '%s': %e", name, err)
@@ -54,6 +68,7 @@ func ansibleGroupResourceQueryCreate(d *schema.ResourceData, meta interface{}) e
 	if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
 		return err
 	}
+	conf.Mutex.Unlock()
 
 	d.SetId(g.GetId())
 	d.MarkNewResource()
@@ -61,15 +76,25 @@ func ansibleGroupResourceQueryCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func ansibleGroupResourceQueryRead(d *schema.ResourceData, meta interface{}) error {
+	conf := meta.(ProviderConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	inventoryRef := d.Get("inventory").(string)
-	i := inventory.LoadFromId(inventoryRef)
-	db := database.NewDatabase(i.GetDatabasePath())
 
-	if err := db.Load(); err != nil {
-		return fmt.Errorf("failed to load groups from temporary database: %e", err)
+	// create a logger for this function
+	logger, _ := util.CreateSubLogger("resource_group_read")
+	logger.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("reading configuration for group")
+
+	i, err := conf.Inventories.GetOrCreate(inventoryRef)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to load inventory")
+		return fmt.Errorf("failed to load inventory '%s': %e", inventoryRef, err)
+	}
+	db, err := i.GetAndLoadDatabase()
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to load database")
+		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
 	}
 
 	g := db.Group(d.Id())
@@ -83,17 +108,28 @@ func ansibleGroupResourceQueryRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func ansibleGroupResourceQueryUpdate(d *schema.ResourceData, meta interface{}) error {
+	conf := meta.(ProviderConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	id := d.Id()
 	name := d.Get("name").(string)
 	inventoryRef := d.Get("inventory").(string)
-	i := inventory.LoadFromId(inventoryRef)
-	db := database.NewDatabase(i.GetDatabasePath())
 
-	if err := db.Load(); err != nil {
-		return fmt.Errorf("failed to load groups from temporary database: %e", err)
+	// create a logger for this function
+	logger, _ := util.CreateSubLogger("resource_group_update")
+	logger.Debug().Str("id", d.Id()).Str("name", name).Str("inventory", inventoryRef).Msg("updating configuration for group")
+
+	i, err := conf.Inventories.GetOrCreate(inventoryRef)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to load inventory")
+		return fmt.Errorf("failed to load inventory '%s': %e", inventoryRef, err)
+	}
+	conf.Mutex.Lock()
+	db, err := i.GetAndLoadDatabase()
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to load database")
+		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
 	}
 
 	g := db.Group(d.Id())
@@ -110,20 +146,32 @@ func ansibleGroupResourceQueryUpdate(d *schema.ResourceData, meta interface{}) e
 			return err
 		}
 	}
+	conf.Mutex.Unlock()
 
 	return ansibleGroupResourceQueryRead(d, meta)
 }
 
 func ansibleGroupResourceQueryDelete(d *schema.ResourceData, meta interface{}) error {
+	conf := meta.(ProviderConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	inventoryRef := d.Get("inventory").(string)
-	i := inventory.LoadFromId(inventoryRef)
-	db := database.NewDatabase(i.GetDatabasePath())
 
-	if err := db.Load(); err != nil {
-		return fmt.Errorf("failed to load groups from temporary database: %e", err)
+	// create a logger for this function
+	logger, _ := util.CreateSubLogger("resource_group_delete")
+	logger.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("deleting group")
+
+	i, err := conf.Inventories.GetOrCreate(inventoryRef)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to load inventory")
+		return fmt.Errorf("failed to load inventory '%s': %e", inventoryRef, err)
+	}
+	conf.Mutex.Lock()
+	db, err := i.GetAndLoadDatabase()
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to load database")
+		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
 	}
 
 	id := d.Id()
@@ -140,6 +188,7 @@ func ansibleGroupResourceQueryDelete(d *schema.ResourceData, meta interface{}) e
 	if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
 		return err
 	}
+	conf.Mutex.Unlock()
 
 	return nil
 }

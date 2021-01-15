@@ -37,7 +37,7 @@ func TestAnsibleInventory_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAnsibleInventoryExists("ansible_inventory.cluster"),
 					resource.TestCheckResourceAttrSet("ansible_inventory.cluster", "id"),
-					resource.TestCheckResourceAttr("ansible_inventory.cluster", "groupvars", TEST_GROUP_VARS_DATA),
+					resource.TestCheckResourceAttr("ansible_inventory.cluster", "group_vars", TEST_GROUP_VARS_DATA),
 				),
 			},
 		},
@@ -55,7 +55,7 @@ func TestAnsibleInventory_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAnsibleInventoryExists("ansible_inventory.cluster"),
 					resource.TestCheckResourceAttrSet("ansible_inventory.cluster", "id"),
-					resource.TestCheckResourceAttr("ansible_inventory.cluster", "groupvars", TEST_GROUP_VARS_DATA),
+					resource.TestCheckResourceAttr("ansible_inventory.cluster", "group_vars", TEST_GROUP_VARS_DATA),
 				),
 			},
 			{
@@ -63,7 +63,7 @@ func TestAnsibleInventory_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAnsibleInventoryExists("ansible_inventory.cluster"),
 					resource.TestCheckResourceAttrSet("ansible_inventory.cluster", "id"),
-					resource.TestCheckResourceAttr("ansible_inventory.cluster", "groupvars", TEST_GROUP_VARS_DATA2),
+					resource.TestCheckResourceAttr("ansible_inventory.cluster", "group_vars", TEST_GROUP_VARS_DATA2),
 				),
 			},
 		},
@@ -91,7 +91,7 @@ provider "ansible" {
 }
 
 resource "ansible_inventory" "cluster" {
-  groupvars = <<-EOT
+  group_vars = <<-EOT
     ---
     k3s_version: v1.19.5+k3s1
     ansible_user: ubuntu
@@ -111,7 +111,7 @@ provider "ansible" {
 }
 
 resource "ansible_inventory" "cluster" {
-  groupvars = <<-EOT
+  group_vars = <<-EOT
     ---
     k3s_version: v1.19.5+k3s1
     ansible_user: ubuntu

@@ -21,19 +21,19 @@ func Exists(id string) bool {
 	return err == nil
 }
 
-func NewInventory(path string) *Inventory {
+func NewInventory(path string) Inventory {
 	id := database.NewIdentity().GetId()
-	return &Inventory{
+	return Inventory{
 		path:          filepath.Clean(path),
 		fullPath:      fmt.Sprintf("%s%s%s", filepath.Clean(path), string(os.PathSeparator), id),
 		groupVarsFile: fmt.Sprintf("%s%s%s%sgroup_vars%sall.yml", path, string(os.PathSeparator), id, string(os.PathSeparator), string(os.PathSeparator)),
 	}
 }
 
-func LoadFromId(id string) *Inventory {
+func LoadFromId(id string) Inventory {
 	parts := strings.Split(filepath.Clean(id), string(os.PathSeparator))
 	path := strings.Join(parts[:len(parts)-1], string(os.PathSeparator))
-	return &Inventory{
+	return Inventory{
 		path:          path,
 		fullPath:      filepath.Clean(id),
 		groupVarsFile: fmt.Sprintf("%s%sgroup_vars%sall.yml", filepath.Clean(id), string(os.PathSeparator), string(os.PathSeparator)),
@@ -50,6 +50,12 @@ func (s *Inventory) GetPath() string {
 
 func (s *Inventory) GetDatabasePath() string {
 	return s.fullPath
+}
+
+func (s *Inventory) GetAndLoadDatabase() (*database.Database, error) {
+	db := database.NewDatabase(s.GetDatabasePath())
+	err := db.Load()
+	return db, err
 }
 
 func (s *Inventory) Load() (error, string) {

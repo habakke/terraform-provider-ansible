@@ -103,7 +103,7 @@ provider "ansible" {
 }
 
 resource "ansible_inventory" "cluster" {
-  groupvars = <<-EOT
+  group_vars = <<-EOT
     ---
     k3s_version: v1.19.5+k3s1
     ansible_user: ubuntu
@@ -136,7 +136,7 @@ provider "ansible" {
 }
 
 resource "ansible_inventory" "cluster" {
-  groupvars = <<-EOT
+  group_vars = <<-EOT
     ---
     k3s_version: v1.19.5+k3s1
     ansible_user: ubuntu

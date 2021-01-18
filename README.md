@@ -71,4 +71,3 @@ make testacc
 ## TODO
 
 * Add proper docs as seen in other community providers (https://github.com/paultyng/terraform-provider-unifi/tree/main/docs)
-

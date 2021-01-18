@@ -41,8 +41,8 @@ func TestExport(t *testing.T) {
 	_ = db.AddGroup(*node)
 
 	groupInGroup := database.NewGroup("k3s_cluster:children")
-	_ = groupInGroup.AddEntity(database.NewGroup("master"))
-	_ = groupInGroup.AddEntity(database.NewGroup("node"))
+	_ = groupInGroup.AddEntity(database.NewGroup(master.GetName()))
+	_ = groupInGroup.AddEntity(database.NewGroup(node.GetName()))
 	_ = db.AddGroup(*groupInGroup)
 
 	// run test
@@ -53,6 +53,7 @@ func TestExport(t *testing.T) {
 	if data, err := ioutil.ReadFile(ENCODE_FILE); err != nil {
 		assert.Fail(t, fmt.Sprintf("failed read encoded file: %e", err))
 	} else {
+		fmt.Print(string(data))
 		assert.Equal(t, len(TEST_HOST_DATA), len(string(data)))
 	}
 }

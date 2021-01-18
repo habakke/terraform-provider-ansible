@@ -3,22 +3,24 @@ package ansible
 import (
 	"errors"
 	"fmt"
-	"github.com/go-ini/ini"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/database"
+	"io/ioutil"
+	"os"
 	"strings"
 )
 
 func Encode(file string, database *database.Database) error {
-	f := ini.Empty()
+	var s string
 	for _, v := range *database.AllGroups() {
 		e := v.GetEntriesAsString()
 		if e == nil {
-			_, _ = f.NewRawSection(v.GetName(), "")
+			s = s + fmt.Sprintf("[%s]\n", v.GetName())
 		} else {
-			_, _ = f.NewRawSection(v.GetName(), strings.Join(e, "\n"))
+			s = s + fmt.Sprintf("[%s]\n", v.GetName())
+			s = s + fmt.Sprintf("%s\n", strings.Join(e, "\n"))
 		}
 	}
-	if err := f.SaveTo(file); err != nil {
+	if err := ioutil.WriteFile(file, []byte(s), os.ModePerm); err != nil {
 		return errors.New(fmt.Sprintf("failed to save file '%s'", file))
 	}
 	return nil

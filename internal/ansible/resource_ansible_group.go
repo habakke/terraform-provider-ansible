@@ -177,11 +177,12 @@ func ansibleGroupResourceQueryDelete(d *schema.ResourceData, meta interface{}) e
 	id := d.Id()
 	g := db.Group(id)
 	if g == nil {
-		return fmt.Errorf("unable to find group with id '%s'", d.Id())
-	}
-
-	if err := db.RemoveGroup(*g); err != nil {
-		return fmt.Errorf("unable to delete group '%s': %e", g.GetName(), err)
+		logger.Error().Err(err).Msg("cannot find group so unable to remove, but continuing anyway")
+	} else {
+		// if we find the group we remove it, if we can't find it we can skip removing it
+		if err := db.RemoveGroup(*g); err != nil {
+			return fmt.Errorf("unable to delete group '%s': %e", g.GetName(), err)
+		}
 	}
 
 	// Save and export database

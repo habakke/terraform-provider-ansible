@@ -211,16 +211,19 @@ func ansibleHostResourceQueryDelete(d *schema.ResourceData, meta interface{}) er
 	id := d.Id()
 	g, entry, err := db.FindEntryById(id)
 	if err != nil {
-		return fmt.Errorf("unable to find entry with id '%s': %e", id, err)
-	}
+		logger.Error().Err(err).Msg("cannot find host so unable to remove, but continuing anyway")
+	} else {
+		// only remove host from group if we actually find it there. if we dont find it, then everything is ok and we
+		// can skip the removing it.
 
-	// remove entry from group
-	if err := g.RemoveEntity(*entry); err != nil {
-		return fmt.Errorf("unable to remove entry from group with id: %e", err)
-	}
+		// remove entry from group
+		if err := g.RemoveEntity(*entry); err != nil {
+			return fmt.Errorf("unable to remove entry from group with id: %e", err)
+		}
 
-	// update group
-	db.UpdateGroup(*g)
+		// update group
+		db.UpdateGroup(*g)
+	}
 
 	// Save and export database
 	if err := commitAndExport(db, i.GetDatabasePath()); err != nil {

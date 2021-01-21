@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 type Identity struct {
@@ -17,12 +18,14 @@ func generateId() string {
 }
 
 func NewIdentity() *Identity {
+	rand.Seed(time.Now().UnixNano())
 	return &Identity{
 		id: generateId(),
 	}
 }
 
 func NewIdentityFromId(id string) *Identity {
+	rand.Seed(time.Now().UnixNano())
 	return &Identity{
 		id: id,
 	}

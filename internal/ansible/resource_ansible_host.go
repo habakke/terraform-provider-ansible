@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/database"
+	"github.com/habakke/terraform-ansible-provider/internal/ansible/inventory"
 	"github.com/habakke/terraform-ansible-provider/internal/util"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -54,12 +55,8 @@ func ansibleHostResourceQueryCreate(d *schema.ResourceData, meta interface{}) er
 	logger, _ := util.CreateSubLogger("resource_host_create")
 	logger.Debug().Str("name", name).Str("group", groupId).Str("inventory", inventoryRef).Msg("invoking creation of host")
 
-	i, err := conf.Inventories.GetOrCreate(inventoryRef)
-	if err != nil {
-		logger.Error().Err(err).Msg("failed to load inventory")
-		return fmt.Errorf("failed to load inventory '%s': %e", inventoryRef, err)
-	}
 	conf.Mutex.Lock()
+	i := inventory.LoadFromId(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
@@ -97,12 +94,10 @@ func ansibleHostResourceQueryRead(d *schema.ResourceData, meta interface{}) erro
 	logger, _ := util.CreateSubLogger("resource_host_read")
 	logger.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("reading configuration for host")
 
-	i, err := conf.Inventories.GetOrCreate(inventoryRef)
-	if err != nil {
-		logger.Error().Err(err).Msg("failed to load inventory")
-		return fmt.Errorf("failed to load inventory '%s': %e", inventoryRef, err)
-	}
+	conf.Mutex.Lock()
+	i := inventory.LoadFromId(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
+	conf.Mutex.Unlock()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
 		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
@@ -133,12 +128,8 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 	logger, _ := util.CreateSubLogger("resource_host_update")
 	logger.Debug().Str("id", d.Id()).Str("group", groupId).Str("inventory", inventoryRef).Msg("updating configuration for host")
 
-	i, err := conf.Inventories.GetOrCreate(inventoryRef)
-	if err != nil {
-		logger.Error().Err(err).Msg("failed to load inventory")
-		return fmt.Errorf("failed to load inventory '%s': %e", inventoryRef, err)
-	}
 	conf.Mutex.Lock()
+	i := inventory.LoadFromId(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
@@ -196,12 +187,8 @@ func ansibleHostResourceQueryDelete(d *schema.ResourceData, meta interface{}) er
 	logger, _ := util.CreateSubLogger("resource_host_delete")
 	logger.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("deleting host")
 
-	i, err := conf.Inventories.GetOrCreate(inventoryRef)
-	if err != nil {
-		logger.Error().Err(err).Msg("failed to load inventory")
-		return fmt.Errorf("failed to load inventory '%s': %e", inventoryRef, err)
-	}
 	conf.Mutex.Lock()
+	i := inventory.LoadFromId(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")

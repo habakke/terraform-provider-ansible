@@ -198,6 +198,11 @@ func CreateSubLogger(loggerName string) (zerolog.Logger, error) {
 	}
 
 	// create the logger
-	thisLogger := rootLogger.With().Str("loggerName", loggerName).Logger().Level(level)
-	return thisLogger, nil
+	if loggerName == "" {
+		thisLogger := rootLogger.With().Logger().Level(level)
+		return thisLogger, nil
+	} else {
+		thisLogger := rootLogger.With().Str("loggerName", loggerName).Logger().Level(level)
+		return thisLogger, nil
+	}
 }

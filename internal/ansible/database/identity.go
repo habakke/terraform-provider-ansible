@@ -24,17 +24,7 @@ func NewIdentity() *Identity {
 	}
 }
 
-func NewIdentityFromId(id string) *Identity {
-	rand.Seed(time.Now().UnixNano())
-	return &Identity{
-		id: id,
-	}
-}
-
 func (s *Identity) GetId() string {
-	if s.id == "" {
-		s.id = generateId()
-	}
 	return s.id
 }
 

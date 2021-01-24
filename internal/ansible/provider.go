@@ -2,7 +2,6 @@ package ansible
 
 import (
 	"fmt"
-	"github.com/habakke/terraform-ansible-provider/internal/ansible/inventory"
 	"github.com/habakke/terraform-ansible-provider/internal/util"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -10,14 +9,17 @@ import (
 )
 
 type ProviderConfiguration struct {
-	Path        string
-	Mutex       *sync.Mutex
-	LogFile     string
-	LogLevels   map[string]string
-	Inventories inventory.InventoryMap
+	Path      string
+	Mutex     *sync.Mutex
+	LogFile   string
+	LogLevels map[string]string
 }
 
 func Provider() terraform.ResourceProvider {
+	// create a logger an log version string
+	logger, _ := util.CreateSubLogger("")
+	logger.Info().Msgf("%s", util.GetVersionString())
+
 	p := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"path": {
@@ -80,11 +82,10 @@ func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
 		path := d.Get("path").(string)
 		var mut sync.Mutex
 		conf := ProviderConfiguration{
-			Path:        path,
-			Mutex:       &mut,
-			LogFile:     d.Get("log_file").(string),
-			LogLevels:   logLevels,
-			Inventories: inventory.NewInventoryMap(),
+			Path:      path,
+			Mutex:     &mut,
+			LogFile:   d.Get("log_file").(string),
+			LogLevels: logLevels,
 		}
 		return conf, nil
 	}

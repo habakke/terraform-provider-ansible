@@ -46,10 +46,7 @@ func ansibleInventoryResourceQueryCreate(d *schema.ResourceData, meta interface{
 
 	conf.Mutex.Lock()
 	i := inventory.NewInventory(conf.Path)
-	if err := conf.Inventories.Add(i); err != nil {
-		logger.Error().Err(err).Msg("failed to create inventory")
-		return fmt.Errorf("failed to create inventory: %e", err)
-	}
+	logger.Debug().Str("id", i.GetId()).Msg("created new inventory")
 	if err := i.Commit(groupVars); err != nil {
 		logger.Error().Err(err).Msg("failed to commit inventory")
 		return fmt.Errorf("failed to commit inventory: %e", err)
@@ -73,12 +70,7 @@ func ansibleInventoryResourceQueryRead(d *schema.ResourceData, meta interface{})
 	logger.Debug().Str("id", d.Id()).Msg("reading configuration for inventory")
 
 	conf.Mutex.Lock()
-	i, err := conf.Inventories.GetOrCreate(id)
-	if err != nil {
-		logger.Error().Err(err).Msg("faile to read inventory")
-		return fmt.Errorf("failed to read inventory '%s': %e", id, err)
-	}
-
+	i := inventory.LoadFromId(id)
 	err, groupVars := i.Load()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load inventory")
@@ -103,12 +95,7 @@ func ansibleInventoryResourceQueryUpdate(d *schema.ResourceData, meta interface{
 	logger, _ := util.CreateSubLogger("resource_host_update")
 	logger.Debug().Str("id", d.Id()).Str("groupVars", groupVars).Msg("updating configuration for inventory")
 
-	i, err := conf.Inventories.GetOrCreate(id)
-	if err != nil {
-		logger.Error().Err(err).Msg("failed to load inventory")
-		return fmt.Errorf("failed to load inventory '%s': %e", id, err)
-	}
-
+	i := inventory.LoadFromId(id)
 	if d.HasChange("group_vars") {
 		conf.Mutex.Lock()
 		if err := i.Commit(groupVars); err != nil {
@@ -132,20 +119,11 @@ func ansibleInventoryResourceQueryDelete(d *schema.ResourceData, meta interface{
 	logger, _ := util.CreateSubLogger("resource_host_delete")
 	logger.Debug().Str("id", d.Id()).Msg("deleting inventory")
 
-	i, err := conf.Inventories.GetOrCreate(id)
-	if err != nil {
-		logger.Error().Err(err).Msg("failed to load inventory")
-		return fmt.Errorf("failed to load inventory '%s': %e", id, err)
-	}
-
 	conf.Mutex.Lock()
+	i := inventory.LoadFromId(id)
 	if err := i.Delete(); err != nil {
 		logger.Error().Err(err).Msg("failed to delete inventory")
 		return fmt.Errorf("failed to delete inventory: %e", err)
-	}
-	if err := conf.Inventories.Delete(id); err != nil {
-		logger.Error().Err(err).Msg("failed to remove inventory from internal memory")
-		return fmt.Errorf("failed to remove inventory from internal memory: %e", err)
 	}
 	conf.Mutex.Unlock()
 	return nil

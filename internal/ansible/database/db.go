@@ -101,12 +101,17 @@ func (s *Database) Load() error {
 	}
 
 	s.groups = map[string]Group{}
-	if jsonString, err := ioutil.ReadFile(s.dbFile); err != nil {
+	jsonString, err := ioutil.ReadFile(s.dbFile)
+	if err != nil {
 		return errors.New(fmt.Sprintf("failed to load database file '%s': %e", s.dbFile, err))
-	} else {
-		if err := json.Unmarshal(jsonString, &s.groups); err != nil {
-			return errors.New(fmt.Sprintf("failed to deserialize database '%s' to json: %e", s.dbFile, err))
-		}
+	}
+
+	if len(jsonString) == 0 {
+		return nil
+	}
+
+	if err := json.Unmarshal(jsonString, &s.groups); err != nil {
+		return errors.New(fmt.Sprintf("failed to deserialize database '%s' to json: %e", s.dbFile, err))
 	}
 
 	return nil

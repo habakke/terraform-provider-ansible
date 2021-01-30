@@ -15,7 +15,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - '-s -w -X main.version={{.Version}} -X main.commit={{.Branch}}@{{.Commit}} -X main.date={{.Date}} -X main.builtBy=CI'
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Branch}}@{{.ShortCommit}} -X main.buildTime={{.Date}} -X main.builtBy=CI'
     goos:
       - freebsd
       - windows
@@ -26,6 +26,8 @@ builds:
       - '386'
       - arm
       - arm64
+    goarm:
+      - 7
     ignore:
       - goos: darwin
         goarch: '386'

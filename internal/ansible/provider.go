@@ -16,10 +16,6 @@ type ProviderConfiguration struct {
 }
 
 func Provider() terraform.ResourceProvider {
-	// create a logger an log version string
-	logger, _ := util.CreateSubLogger("")
-	logger.Info().Msgf("%s", util.GetVersionString())
-
 	p := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"path": {

@@ -15,7 +15,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - '-s -w -X util.version={{.Version}} -X util.commit={{.Commit}} -X util.date={{.Date}} -X util.builtBy=CI'
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Branch}}@{{.Commit}} -X main.date={{.Date}} -X main.builtBy=CI'
     goos:
       - freebsd
       - windows

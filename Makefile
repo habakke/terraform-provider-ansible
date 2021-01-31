@@ -35,6 +35,9 @@ test: prepare
 testacc: prepare
 	TF_ACC=true go test -v -coverprofile=$(BUILD_DIR)/cover.out ./...
 
+lint:
+	golint ./...
+
 release: testacc
 	@[ "${version}" ] || ( echo ">> please provide version=vX.Y.Z"; exit 1 )
 	git tag ${version}

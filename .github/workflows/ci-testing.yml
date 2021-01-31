@@ -13,7 +13,12 @@ jobs:
       - name: test
         run: make test
         env:
-          VERSION: "v1.0.0"
+          VERSION: "v1.0.0"
+      - name: Upload Coverage report to CodeCov
+        uses: codecov/codecov-action@v1.0.0
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          file: ./build/cover.out
 
   testacc:
     needs: test

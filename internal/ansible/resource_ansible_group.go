@@ -38,7 +38,7 @@ func ansibleGroupResourceQuery() *schema.Resource {
 }
 
 func ansibleGroupResourceQueryCreate(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -67,13 +67,13 @@ func ansibleGroupResourceQueryCreate(d *schema.ResourceData, meta interface{}) e
 	}
 	conf.Mutex.Unlock()
 
-	d.SetId(g.GetId())
+	d.SetId(g.GetID())
 	d.MarkNewResource()
 	return ansibleGroupResourceQueryRead(d, meta)
 }
 
 func ansibleGroupResourceQueryRead(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -103,7 +103,7 @@ func ansibleGroupResourceQueryRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func ansibleGroupResourceQueryUpdate(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -143,7 +143,7 @@ func ansibleGroupResourceQueryUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func ansibleGroupResourceQueryDelete(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

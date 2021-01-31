@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-const TEST_GROUP_VARS_DATA = `---
+const TestGroupVarsData = `---
 k3s_version: v1.19.5+k3s1
 ansible_user: ubuntu
 systemd_dir: /etc/systemd/system
@@ -17,7 +17,7 @@ extra_server_args: ""
 extra_agent_args: ""
 `
 
-const TEST_GROUP_VARS_DATA2 = `---
+const TestGroupVarsData2 = `---
 k3s_version: v1.19.5+k3s1
 ansible_user: ubuntu
 systemd_dir: /etc/systemd/system
@@ -37,7 +37,7 @@ func TestAnsibleInventory_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAnsibleInventoryExists("ansible_inventory.cluster"),
 					resource.TestCheckResourceAttrSet("ansible_inventory.cluster", "id"),
-					resource.TestCheckResourceAttr("ansible_inventory.cluster", "group_vars", TEST_GROUP_VARS_DATA),
+					resource.TestCheckResourceAttr("ansible_inventory.cluster", "group_vars", TestGroupVarsData),
 				),
 			},
 		},
@@ -55,7 +55,7 @@ func TestAnsibleInventory_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAnsibleInventoryExists("ansible_inventory.cluster"),
 					resource.TestCheckResourceAttrSet("ansible_inventory.cluster", "id"),
-					resource.TestCheckResourceAttr("ansible_inventory.cluster", "group_vars", TEST_GROUP_VARS_DATA),
+					resource.TestCheckResourceAttr("ansible_inventory.cluster", "group_vars", TestGroupVarsData),
 				),
 			},
 			{
@@ -63,7 +63,7 @@ func TestAnsibleInventory_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAnsibleInventoryExists("ansible_inventory.cluster"),
 					resource.TestCheckResourceAttrSet("ansible_inventory.cluster", "id"),
-					resource.TestCheckResourceAttr("ansible_inventory.cluster", "group_vars", TEST_GROUP_VARS_DATA2),
+					resource.TestCheckResourceAttr("ansible_inventory.cluster", "group_vars", TestGroupVarsData2),
 				),
 			},
 		},

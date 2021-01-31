@@ -56,21 +56,20 @@ func TestAnsibleHost_Update(t *testing.T) {
 	})
 }
 
-func hostExists(hostId string, inventoryName string, groupId string) bool {
+func hostExists(hostId string, inventoryName string, groupID string) bool {
 	i := inventory.LoadFromId(inventoryName)
 	db := database.NewDatabase(i.GetDatabasePath())
 	if !db.Exists() {
 		return false
-	} else {
-		_ = db.Load()
 	}
 
+	_ = db.Load()
 	g, e, err := db.FindEntryById(hostId)
 	if err != nil {
 		return false
 	}
 
-	return (e != nil) && (g.GetId() == groupId)
+	return (e != nil) && (g.GetID() == groupID)
 }
 
 func testAnsibleHostDestroy(s *terraform.State) error {

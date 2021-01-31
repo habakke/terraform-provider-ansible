@@ -1,7 +1,8 @@
 package database
 
+// Interface representing an entity that could be a group member in the database
 type Entity interface {
-	GetId() string
+	GetID() string
 	Type() string
 	GetName() string
 	SetName(name string)

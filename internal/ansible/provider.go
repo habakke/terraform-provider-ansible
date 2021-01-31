@@ -8,13 +8,14 @@ import (
 	"sync"
 )
 
-type ProviderConfiguration struct {
+type providerConfiguration struct {
 	Path      string
 	Mutex     *sync.Mutex
 	LogFile   string
 	LogLevels map[string]string
 }
 
+// The terraform provider definition
 func Provider() terraform.ResourceProvider {
 	p := &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -63,7 +64,7 @@ func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
 			if ok {
 				logLevels[logger] = levelAsString
 			} else {
-				return nil, fmt.Errorf("Invalid logging level %v for %v. Be sure to use a string.", level, logger)
+				return nil, fmt.Errorf("invalid logging level %v for %v. Be sure to use a string", level, logger)
 			}
 		}
 
@@ -77,7 +78,7 @@ func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
 
 		path := d.Get("path").(string)
 		var mut sync.Mutex
-		conf := ProviderConfiguration{
+		conf := providerConfiguration{
 			Path:      path,
 			Mutex:     &mut,
 			LogFile:   d.Get("log_file").(string),

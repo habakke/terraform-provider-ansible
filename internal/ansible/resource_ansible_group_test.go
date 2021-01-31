@@ -53,16 +53,15 @@ func TestAnsibleGroup_Update(t *testing.T) {
 	})
 }
 
-func groupExists(groupId string, inventoryName string) bool {
+func groupExists(groupID string, inventoryName string) bool {
 	i := inventory.LoadFromId(inventoryName)
 	db := database.NewDatabase(i.GetDatabasePath())
 	if !db.Exists() {
 		return false
-	} else {
-		_ = db.Load()
 	}
 
-	g := db.Group(groupId)
+	_ = db.Load()
+	g := db.Group(groupID)
 	return g != nil
 }
 

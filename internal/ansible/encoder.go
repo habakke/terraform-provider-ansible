@@ -1,7 +1,6 @@
 package ansible
 
 import (
-	"errors"
 	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/database"
 	"io/ioutil"
@@ -9,6 +8,7 @@ import (
 	"strings"
 )
 
+// The Encode function encodes the database to an Ansible compatible hosts.ini file
 func Encode(file string, database *database.Database) error {
 	var s string
 	for _, v := range *database.AllGroups() {
@@ -21,7 +21,7 @@ func Encode(file string, database *database.Database) error {
 		}
 	}
 	if err := ioutil.WriteFile(file, []byte(s), os.ModePerm); err != nil {
-		return errors.New(fmt.Sprintf("failed to save file '%s'", file))
+		return fmt.Errorf("failed to save file '%s'", file)
 	}
 	return nil
 }

@@ -14,13 +14,13 @@ var (
 	buildBy   string
 )
 
-func GetVersionString(name string) string {
+func getVersionString(name string) string {
 	return fmt.Sprintf("%s %s (%s at %s by %s)", name, version, commit, buildTime, buildBy)
 }
 func main() {
 	// create a logger an log version string
 	logger, _ := util.CreateSubLogger("")
-	logger.Info().Msgf("%s", GetVersionString("terraform-ansible-provider"))
+	logger.Info().Msgf("%s", getVersionString("terraform-ansible-provider"))
 
 	plugin.Serve(&plugin.ServeOpts{
 		ProviderFunc: ansible.Provider,

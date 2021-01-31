@@ -43,17 +43,17 @@ func ansibleHostResourceQuery() *schema.Resource {
 }
 
 func ansibleHostResourceQueryCreate(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	name := d.Get("name").(string)
-	groupId := d.Get("group").(string)
+	groupID := d.Get("group").(string)
 	inventoryRef := d.Get("inventory").(string)
 
 	// create a logger for this function
 	logger, _ := util.CreateSubLogger("resource_host_create")
-	logger.Debug().Str("name", name).Str("group", groupId).Str("inventory", inventoryRef).Msg("invoking creation of host")
+	logger.Debug().Str("name", name).Str("group", groupID).Str("inventory", inventoryRef).Msg("invoking creation of host")
 
 	conf.Mutex.Lock()
 	i := inventory.LoadFromId(inventoryRef)
@@ -63,9 +63,9 @@ func ansibleHostResourceQueryCreate(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
 	}
 
-	g := db.Group(groupId)
+	g := db.Group(groupID)
 	if g == nil {
-		return fmt.Errorf("unable to find group '%s'", groupId)
+		return fmt.Errorf("unable to find group '%s'", groupID)
 	}
 
 	h := database.NewHost(name)
@@ -78,13 +78,13 @@ func ansibleHostResourceQueryCreate(d *schema.ResourceData, meta interface{}) er
 	}
 	conf.Mutex.Unlock()
 
-	d.SetId(h.GetId())
+	d.SetId(h.GetID())
 	d.MarkNewResource()
 	return ansibleHostResourceQueryRead(d, meta)
 }
 
 func ansibleHostResourceQueryRead(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -110,13 +110,13 @@ func ansibleHostResourceQueryRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	_ = d.Set("name", (*entry).GetName())
-	_ = d.Set("group", g.GetId())
+	_ = d.Set("group", g.GetID())
 
 	return nil
 }
 
 func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -151,7 +151,7 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 	if d.HasChange("group") {
 		// remove host from old group
 		if err := g.RemoveEntity(*entry); err != nil {
-			return fmt.Errorf("failed remove entry from group '%s': %e", g.GetId(), err)
+			return fmt.Errorf("failed remove entry from group '%s': %e", g.GetID(), err)
 		}
 		db.UpdateGroup(*g)
 
@@ -177,7 +177,7 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 }
 
 func ansibleHostResourceQueryDelete(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

@@ -34,7 +34,7 @@ func ansibleInventoryResourceQuery() *schema.Resource {
 }
 
 func ansibleInventoryResourceQueryCreate(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -59,7 +59,7 @@ func ansibleInventoryResourceQueryCreate(d *schema.ResourceData, meta interface{
 }
 
 func ansibleInventoryResourceQueryRead(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -84,7 +84,7 @@ func ansibleInventoryResourceQueryRead(d *schema.ResourceData, meta interface{})
 }
 
 func ansibleInventoryResourceQueryUpdate(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -109,7 +109,7 @@ func ansibleInventoryResourceQueryUpdate(d *schema.ResourceData, meta interface{
 }
 
 func ansibleInventoryResourceQueryDelete(d *schema.ResourceData, meta interface{}) error {
-	conf := meta.(ProviderConfiguration)
+	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

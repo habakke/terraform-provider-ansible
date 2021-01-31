@@ -8,10 +8,10 @@ import (
 	"testing"
 )
 
-const DB_PATH = "/tmp"
-const ENCODE_FILE = "/tmp/encode_test.ini"
+const DbPath = "/tmp"
+const EncodeFile = "/tmp/encode_test.ini"
 
-const TEST_HOST_DATA = `[master]
+const TestHostData = `[master]
 192.168.0.180
 [node]
 192.168.0.181
@@ -25,7 +25,7 @@ node
 `
 
 func TestExport(t *testing.T) {
-	db := database.NewDatabase(DB_PATH)
+	db := database.NewDatabase(DbPath)
 
 	// add some test data
 	master := database.NewGroup("master")
@@ -46,14 +46,14 @@ func TestExport(t *testing.T) {
 	_ = db.AddGroup(*groupInGroup)
 
 	// run test
-	if err := Encode(ENCODE_FILE, db); err != nil {
+	if err := Encode(EncodeFile, db); err != nil {
 		assert.Fail(t, fmt.Sprintf("failed to encode file: %e", err))
 	}
 
-	if data, err := ioutil.ReadFile(ENCODE_FILE); err != nil {
+	if data, err := ioutil.ReadFile(EncodeFile); err != nil {
 		assert.Fail(t, fmt.Sprintf("failed read encoded file: %e", err))
 	} else {
 		fmt.Print(string(data))
-		assert.Equal(t, len(TEST_HOST_DATA), len(string(data)))
+		assert.Equal(t, len(TestHostData), len(string(data)))
 	}
 }

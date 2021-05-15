@@ -46,14 +46,14 @@ func ansibleInventoryResourceQueryCreate(d *schema.ResourceData, meta interface{
 
 	conf.Mutex.Lock()
 	i := inventory.NewInventory(conf.Path)
-	logger.Debug().Str("id", i.GetId()).Msg("created new inventory")
+	logger.Debug().Str("id", i.GetID()).Msg("created new inventory")
 	if err := i.Commit(groupVars); err != nil {
 		logger.Error().Err(err).Msg("failed to commit inventory")
 		return fmt.Errorf("failed to commit inventory: %e", err)
 	}
 	conf.Mutex.Unlock()
 
-	d.SetId(i.GetId())
+	d.SetId(i.GetID())
 	d.MarkNewResource()
 	return ansibleInventoryResourceQueryRead(d, meta)
 }
@@ -70,8 +70,8 @@ func ansibleInventoryResourceQueryRead(d *schema.ResourceData, meta interface{})
 	logger.Debug().Str("id", d.Id()).Msg("reading configuration for inventory")
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromId(id)
-	err, groupVars := i.Load()
+	i := inventory.LoadFromID(id)
+	groupVars, err := i.Load()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load inventory")
 		return fmt.Errorf("failed to load inventory '%s': %e", id, err)
@@ -95,7 +95,7 @@ func ansibleInventoryResourceQueryUpdate(d *schema.ResourceData, meta interface{
 	logger, _ := util.CreateSubLogger("resource_host_update")
 	logger.Debug().Str("id", d.Id()).Str("groupVars", groupVars).Msg("updating configuration for inventory")
 
-	i := inventory.LoadFromId(id)
+	i := inventory.LoadFromID(id)
 	if d.HasChange("group_vars") {
 		conf.Mutex.Lock()
 		if err := i.Commit(groupVars); err != nil {
@@ -120,7 +120,7 @@ func ansibleInventoryResourceQueryDelete(d *schema.ResourceData, meta interface{
 	logger.Debug().Str("id", d.Id()).Msg("deleting inventory")
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromId(id)
+	i := inventory.LoadFromID(id)
 	if err := i.Delete(); err != nil {
 		logger.Error().Err(err).Msg("failed to delete inventory")
 		return fmt.Errorf("failed to delete inventory: %e", err)

@@ -18,7 +18,7 @@ func NewHost(name string) *Host {
 
 // Returns the ID of the Host
 func (s *Host) GetID() string {
-	return s.id.GetId()
+	return s.id.GetID()
 }
 
 // Returns the name of the Host
@@ -39,11 +39,11 @@ func (s *Host) Type() string {
 // Marshals the Host to JSON
 func (s Host) MarshalJSON() ([]byte, error) {
 	aux := &struct {
-		Id   Identity `json:"id"`
+		ID   Identity `json:"id"`
 		Type string   `json:"type"`
 		Name string   `json:"name"`
 	}{
-		Id:   s.id,
+		ID:   s.id,
 		Type: s.Type(),
 		Name: s.name,
 	}
@@ -58,7 +58,7 @@ func (s Host) MarshalJSON() ([]byte, error) {
 // Unmarshal a Host from JSON
 func (s *Host) UnmarshalJSON(data []byte) error {
 	aux := &struct {
-		Id   Identity `json:"id"`
+		ID   Identity `json:"id"`
 		Type string   `json:"type"`
 		Name string   `json:"name"`
 	}{}
@@ -67,7 +67,7 @@ func (s *Host) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	s.id = aux.Id
+	s.id = aux.ID
 	s.name = aux.Name
 
 	return nil

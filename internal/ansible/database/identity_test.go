@@ -7,8 +7,8 @@ import (
 
 func TestIdentityValues(t *testing.T) {
 
-	i1 := NewIdentity().GetId()
-	i2 := NewIdentity().GetId()
+	i1 := NewIdentity().GetID()
+	i2 := NewIdentity().GetID()
 
 	assert.NotEqual(t, i1, i2)
 }

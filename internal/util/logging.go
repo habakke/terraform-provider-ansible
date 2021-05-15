@@ -24,7 +24,7 @@ func levelStringToZerologLevel(logLevel string) (zerolog.Level, error) {
 
 	foundResult, ok := conversionMap[logLevel]
 	if !ok {
-		return zerolog.Disabled, fmt.Errorf("Unable to find level %v", logLevel)
+		return zerolog.Disabled, fmt.Errorf("unable to find level %v", logLevel)
 	}
 	return foundResult, nil
 }
@@ -80,7 +80,7 @@ func ConfigureLogger(enableOutput bool, logPath string, inputLogLevels map[strin
 
 	// Create the log file if doesn't exist. And append to it if it already exists.
 	// TODO log to stderr so at least terraform's TF_LOG can capture an issue if this file isn't created
-	f, err := os.OpenFile(logPath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	f, _ := os.OpenFile(logPath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 
 	// using a multi-writer here so we can easily add additional log destination (like a json file)
 	// for now though using just the console writer because it makes pretty logs

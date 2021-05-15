@@ -1,21 +1,12 @@
-
-# Visit https://goreleaser.com for documentation on how to customize this
-# behavior.
+project_name: terraform-provider-ansible
 before:
   hooks:
-    # this is just an example and not a requirement for provider building/publishing
     - go mod tidy
 builds:
-  - env:
-      # goreleaser does not work with CGO, it could also complicate
-      # usage by users in CI/CD systems like Terraform Cloud where
-      # they are unable to install libraries.
-      - CGO_ENABLED=0
-    mod_timestamp: '{{ .CommitTimestamp }}'
+  - id: terraform-provider-ansible
+    binary: '{{ .ProjectName }}_v{{ .Version }}'
     flags:
       - -trimpath
-    ldflags:
-      - '-s -w -X main.version={{.Version}} -X main.commit={{.Branch}}@{{.ShortCommit}} -X main.buildTime={{.Date}} -X main.builtBy=CI'
     goos:
       - freebsd
       - windows
@@ -23,15 +14,19 @@ builds:
       - darwin
     goarch:
       - amd64
-      - '386'
+      - 386
       - arm
       - arm64
     goarm:
       - 7
+    env:
+      - CGO_ENABLED=0
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    ldflags:
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Branch}}@{{.ShortCommit}} -X main.buildTime={{.Date}} -X main.builtBy=CI'
     ignore:
       - goos: darwin
-        goarch: '386'
-    binary: '{{ .ProjectName }}_v{{ .Version }}'
+        goarch: 386
 archives:
   - format: zip
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'

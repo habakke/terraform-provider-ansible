@@ -56,15 +56,15 @@ func TestAnsibleHost_Update(t *testing.T) {
 	})
 }
 
-func hostExists(hostId string, inventoryName string, groupID string) bool {
-	i := inventory.LoadFromId(inventoryName)
+func hostExists(hostID string, inventoryName string, groupID string) bool {
+	i := inventory.LoadFromID(inventoryName)
 	db := database.NewDatabase(i.GetDatabasePath())
 	if !db.Exists() {
 		return false
 	}
 
 	_ = db.Load()
-	g, e, err := db.FindEntryById(hostId)
+	g, e, err := db.FindEntryByID(hostID)
 	if err != nil {
 		return false
 	}
@@ -74,12 +74,12 @@ func hostExists(hostId string, inventoryName string, groupID string) bool {
 
 func testAnsibleHostDestroy(s *terraform.State) error {
 	var id *string
-	var groupId string
+	var groupID string
 	var inventoryRef string
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type == "ansible_host" && rs.Primary.Attributes["name"] == "k3s-master-1" || rs.Primary.Attributes["name"] == "k3s-master-1-edit" {
 			id = &rs.Primary.ID
-			groupId = rs.Primary.Attributes["group"]
+			groupID = rs.Primary.Attributes["group"]
 			inventoryRef = rs.Primary.Attributes["inventory"]
 		}
 	}
@@ -88,7 +88,7 @@ func testAnsibleHostDestroy(s *terraform.State) error {
 		return fmt.Errorf("Unable to find host 'k3s-master-1'")
 	}
 
-	if hostExists(*id, inventoryRef, groupId) {
+	if hostExists(*id, inventoryRef, groupID) {
 		return fmt.Errorf("host '%s' still exists", *id)
 	}
 

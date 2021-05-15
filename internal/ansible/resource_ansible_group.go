@@ -50,7 +50,7 @@ func ansibleGroupResourceQueryCreate(d *schema.ResourceData, meta interface{}) e
 	logger.Debug().Str("name", name).Str("inventory", inventoryRef).Msg("invoking creation of group")
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromId(inventoryRef)
+	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
@@ -84,7 +84,7 @@ func ansibleGroupResourceQueryRead(d *schema.ResourceData, meta interface{}) err
 	logger.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("reading configuration for group")
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromId(inventoryRef)
+	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	conf.Mutex.Unlock()
 	if err != nil {
@@ -116,7 +116,7 @@ func ansibleGroupResourceQueryUpdate(d *schema.ResourceData, meta interface{}) e
 	logger.Debug().Str("id", d.Id()).Str("name", name).Str("inventory", inventoryRef).Msg("updating configuration for group")
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromId(inventoryRef)
+	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
@@ -154,7 +154,7 @@ func ansibleGroupResourceQueryDelete(d *schema.ResourceData, meta interface{}) e
 	logger.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("deleting group")
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromId(inventoryRef)
+	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")

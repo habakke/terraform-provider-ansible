@@ -1,30 +1,28 @@
 package database
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
-	"math/rand"
-	"time"
 )
 
 type Identity struct {
 	id string
 }
 
-func generateId() string {
+func generateID() string {
 	b := make([]byte, 16)
-	rand.Read(b)
+	_, _ = rand.Read(b)
 	return fmt.Sprintf("%x", b)
 }
 
 func NewIdentity() *Identity {
-	rand.Seed(time.Now().UnixNano())
 	return &Identity{
-		id: generateId(),
+		id: generateID(),
 	}
 }
 
-func (s *Identity) GetId() string {
+func (s *Identity) GetID() string {
 	return s.id
 }
 

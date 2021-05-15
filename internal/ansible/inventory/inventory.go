@@ -22,7 +22,7 @@ func Exists(id string) bool {
 }
 
 func NewInventory(path string) Inventory {
-	id := database.NewIdentity().GetId()
+	id := database.NewIdentity().GetID()
 	return Inventory{
 		path:          filepath.Clean(path),
 		fullPath:      fmt.Sprintf("%s%s%s", filepath.Clean(path), string(os.PathSeparator), id),
@@ -30,7 +30,7 @@ func NewInventory(path string) Inventory {
 	}
 }
 
-func LoadFromId(id string) Inventory {
+func LoadFromID(id string) Inventory {
 	parts := strings.Split(filepath.Clean(id), string(os.PathSeparator))
 	path := strings.Join(parts[:len(parts)-1], string(os.PathSeparator))
 	return Inventory{
@@ -40,7 +40,7 @@ func LoadFromId(id string) Inventory {
 	}
 }
 
-func (s *Inventory) GetId() string {
+func (s *Inventory) GetID() string {
 	return s.fullPath
 }
 
@@ -58,15 +58,15 @@ func (s *Inventory) GetAndLoadDatabase() (*database.Database, error) {
 	return db, err
 }
 
-func (s *Inventory) Load() (error, string) {
+func (s *Inventory) Load() (string, error) {
 	if _, err := os.Stat(s.groupVarsFile); os.IsNotExist(err) {
-		return errors.New("failed to load inventory because groupvars files doesn't exist"), ""
+		return "", errors.New("failed to load inventory because groupvars files doesn't exist")
 	}
 
 	if data, err := ioutil.ReadFile(s.groupVarsFile); err != nil {
-		return err, ""
+		return "", err
 	} else {
-		return nil, string(data)
+		return string(data), nil
 	}
 }
 

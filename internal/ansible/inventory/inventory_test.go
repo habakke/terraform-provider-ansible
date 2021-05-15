@@ -33,13 +33,13 @@ func TestCreateNewInventory(t *testing.T) {
 
 	// 2. Load inventory from ID
 
-	i2 := LoadFromId(i.GetId())
+	i2 := LoadFromID(i.GetID())
 	assert.Equal(t, INVENTORY_PATH, i2.GetPath())
 	if _, err := os.Stat(i2.groupVarsFile); os.IsNotExist(err) {
 		assert.Fail(t, "inventory group_vars file does not exist")
 	}
 
-	if err, groupVars := i.Load(); err != nil {
+	if groupVars, err := i.Load(); err != nil {
 		assert.Fail(t, "failed to load inventory")
 	} else {
 		assert.Equal(t, TEST_GROUP_VARS_DATA, groupVars)

@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/util"
 )
@@ -25,7 +24,7 @@ func NewGroup(name string) *Group {
 
 // Returns the ID of the Group
 func (s *Group) GetID() string {
-	return s.id.GetId()
+	return s.id.GetID()
 }
 
 // Returns the name of the Group
@@ -46,7 +45,7 @@ func (s *Group) Type() string {
 // Adds an Entity to the Group
 func (s *Group) AddEntity(entity Entity) error {
 	if _, ok := s.entries[entity.GetID()]; ok {
-		return errors.New(fmt.Sprintf("entity '%s' already exists in group", entity.GetID()))
+		return fmt.Errorf("entity '%s' already exists in group", entity.GetID())
 	}
 
 	s.entries[entity.GetID()] = &entity
@@ -76,7 +75,7 @@ func (s *Group) Entry(id string) *Entity {
 // Returns a list of all Entity names in the Group as a string array
 func (s *Group) GetEntriesAsString() []string {
 	var stringEntries []string
-	for k, _ := range s.entries {
+	for k := range s.entries {
 		stringEntries = append(stringEntries, (*s.entries[k]).GetName())
 	}
 	return stringEntries
@@ -99,12 +98,12 @@ func entriesMapToStringMap(entries map[string]*Entity) map[string]string {
 // Marshal Group to JSON
 func (s Group) MarshalJSON() ([]byte, error) {
 	aux := &struct {
-		Id      Identity          `json:"id"`
+		ID      Identity          `json:"id"`
 		Type    string            `json:"type"`
 		Name    string            `json:"name"`
 		Entries map[string]string `json:"entries"`
 	}{
-		Id:      s.id,
+		ID:      s.id,
 		Type:    s.Type(),
 		Name:    s.name,
 		Entries: entriesMapToStringMap(s.entries),
@@ -120,7 +119,7 @@ func (s Group) MarshalJSON() ([]byte, error) {
 // Unmarshal Group from JSON
 func (s *Group) UnmarshalJSON(data []byte) error {
 	aux := &struct {
-		Id      Identity          `json:"id"`
+		ID      Identity          `json:"id"`
 		Type    string            `json:"type"`
 		Name    string            `json:"name"`
 		Entries map[string]string `json:"entries"`
@@ -130,7 +129,7 @@ func (s *Group) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	s.id = aux.Id
+	s.id = aux.ID
 	s.name = aux.Name
 	s.entries = make(map[string]*Entity)
 

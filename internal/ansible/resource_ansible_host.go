@@ -56,7 +56,7 @@ func ansibleHostResourceQueryCreate(d *schema.ResourceData, meta interface{}) er
 	logger.Debug().Str("name", name).Str("group", groupID).Str("inventory", inventoryRef).Msg("invoking creation of host")
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromId(inventoryRef)
+	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
@@ -95,7 +95,7 @@ func ansibleHostResourceQueryRead(d *schema.ResourceData, meta interface{}) erro
 	logger.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("reading configuration for host")
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromId(inventoryRef)
+	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	conf.Mutex.Unlock()
 	if err != nil {
@@ -104,7 +104,7 @@ func ansibleHostResourceQueryRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	id := d.Id()
-	g, entry, err := db.FindEntryById(id)
+	g, entry, err := db.FindEntryByID(id)
 	if err != nil {
 		return fmt.Errorf("unable to find entry '%s': %e", id, err)
 	}
@@ -121,22 +121,22 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 	defer cancel()
 
 	name := d.Get("name").(string)
-	groupId := d.Get("group").(string)
+	groupID := d.Get("group").(string)
 	inventoryRef := d.Get("inventory").(string)
 
 	// create a logger for this function
 	logger, _ := util.CreateSubLogger("resource_host_update")
-	logger.Debug().Str("id", d.Id()).Str("group", groupId).Str("inventory", inventoryRef).Msg("updating configuration for host")
+	logger.Debug().Str("id", d.Id()).Str("group", groupID).Str("inventory", inventoryRef).Msg("updating configuration for host")
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromId(inventoryRef)
+	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
 		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
 	}
 
-	g, entry, err := db.FindEntryById(d.Id())
+	g, entry, err := db.FindEntryByID(d.Id())
 	if err != nil {
 		return fmt.Errorf("unable to find entry '%s': %e", d.Id(), err)
 	}
@@ -156,9 +156,9 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 		db.UpdateGroup(*g)
 
 		// load new group
-		ng := db.Group(groupId)
+		ng := db.Group(groupID)
 		if ng == nil {
-			return fmt.Errorf("failed to locate group '%s': %e", groupId, err)
+			return fmt.Errorf("failed to locate group '%s': %e", groupID, err)
 		}
 
 		// update name and add entity to new group
@@ -188,7 +188,7 @@ func ansibleHostResourceQueryDelete(d *schema.ResourceData, meta interface{}) er
 	logger.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("deleting host")
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromId(inventoryRef)
+	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
@@ -196,7 +196,7 @@ func ansibleHostResourceQueryDelete(d *schema.ResourceData, meta interface{}) er
 	}
 
 	id := d.Id()
-	g, entry, err := db.FindEntryById(id)
+	g, entry, err := db.FindEntryByID(id)
 	if err != nil {
 		logger.Error().Err(err).Msg("cannot find host so unable to remove, but continuing anyway")
 	} else {

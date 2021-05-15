@@ -67,7 +67,7 @@ func (s *Database) Group(id string) *Group {
 }
 
 // Find a host entry in the database by its ID and return the entry and which group it belongs to
-func (s *Database) FindEntryById(id string) (*Group, *Entity, error) {
+func (s *Database) FindEntryByID(id string) (*Group, *Entity, error) {
 	for _, v := range s.groups {
 		if e := v.Entry(id); e != nil {
 			return &v, e, nil

@@ -7,7 +7,7 @@ import (
 )
 
 type SuccessStruct struct {
-	Id   string
+	ID   string
 	Name string
 }
 
@@ -28,6 +28,6 @@ type FailureStruct struct {
 }
 
 func TestCanMarshal(t *testing.T) {
-	assert.True(t, CanMarshal(SuccessStruct{Id: "1", Name: "Success test"}))
+	assert.True(t, CanMarshal(SuccessStruct{ID: "1", Name: "Success test"}))
 	assert.False(t, CanMarshal(FailureStruct{Id: "2", Name: "Failure test"}))
 }

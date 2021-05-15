@@ -1,9 +1,8 @@
 package database
 
 import (
-	"crypto/rand"
 	"encoding/json"
-	"fmt"
+	"github.com/google/uuid"
 )
 
 type Identity struct {
@@ -11,9 +10,7 @@ type Identity struct {
 }
 
 func generateID() string {
-	b := make([]byte, 16)
-	_, _ = rand.Read(b)
-	return fmt.Sprintf("%x", b)
+	return uuid.New().String()
 }
 
 func NewIdentity() *Identity {

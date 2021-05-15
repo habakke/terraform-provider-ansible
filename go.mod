@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/fatih/color v1.10.0 // indirect
+	github.com/google/uuid v1.1.2
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.17.2
 	github.com/jhump/protoreflect v1.6.1 // indirect

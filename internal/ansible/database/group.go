@@ -6,14 +6,14 @@ import (
 	"github.com/habakke/terraform-ansible-provider/internal/util"
 )
 
-// Ansible group
+// Group is a representation of a group in the Ansible hosts.ini file
 type Group struct {
 	id      Identity
 	name    string
 	entries map[string]*Entity
 }
 
-// Creates a new Group with the given name
+// NewGroup returns a new Group with the given name
 func NewGroup(name string) *Group {
 	return &Group{
 		id:      *NewIdentity(),
@@ -22,27 +22,27 @@ func NewGroup(name string) *Group {
 	}
 }
 
-// Returns the ID of the Group
+// GetID returns the ID of the Group
 func (s *Group) GetID() string {
 	return s.id.GetID()
 }
 
-// Returns the name of the Group
+// GetName returns the name of the Group
 func (s *Group) GetName() string {
 	return s.name
 }
 
-// Sets the name of the Group
+// SetName sets the name of the Group
 func (s *Group) SetName(name string) {
 	s.name = name
 }
 
-// Returns the Entity type
+// Type returns the Entity name
 func (s *Group) Type() string {
 	return "GROUP"
 }
 
-// Adds an Entity to the Group
+// AddEntity adds an Entity to the Group
 func (s *Group) AddEntity(entity Entity) error {
 	if _, ok := s.entries[entity.GetID()]; ok {
 		return fmt.Errorf("entity '%s' already exists in group", entity.GetID())
@@ -52,12 +52,12 @@ func (s *Group) AddEntity(entity Entity) error {
 	return nil
 }
 
-// Updates an Entity in the Group
+// UpdateEntity updates an Entity in the Group
 func (s *Group) UpdateEntity(entity Entity) {
 	s.entries[entity.GetID()] = &entity
 }
 
-// Removes an Entity from the Group
+// RemoveEntity removes an Entity from the Group
 func (s *Group) RemoveEntity(entity Entity) error {
 	if _, ok := s.entries[entity.GetID()]; !ok {
 		return nil
@@ -67,12 +67,12 @@ func (s *Group) RemoveEntity(entity Entity) error {
 	return nil
 }
 
-// Returns an Entity from the Group given its ID
+// Entry returns an Entity from the Group given its ID
 func (s *Group) Entry(id string) *Entity {
 	return s.entries[id]
 }
 
-// Returns a list of all Entity names in the Group as a string array
+// GetEntriesAsString returns a list of all Entity names in the Group as a string array
 func (s *Group) GetEntriesAsString() []string {
 	var stringEntries []string
 	for k := range s.entries {
@@ -95,7 +95,7 @@ func entriesMapToStringMap(entries map[string]*Entity) map[string]string {
 	return stringMap
 }
 
-// Marshal Group to JSON
+// MarshalJSON marshals a Group to JSON
 func (s Group) MarshalJSON() ([]byte, error) {
 	aux := &struct {
 		ID      Identity          `json:"id"`
@@ -116,7 +116,7 @@ func (s Group) MarshalJSON() ([]byte, error) {
 	}
 }
 
-// Unmarshal Group from JSON
+// UnmarshalJSON unmarshals Group from a JSON byte array
 func (s *Group) UnmarshalJSON(data []byte) error {
 	aux := &struct {
 		ID      Identity          `json:"id"`

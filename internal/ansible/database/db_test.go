@@ -6,10 +6,10 @@ import (
 	"testing"
 )
 
-const DB_PATH = "/tmp"
+const DbPath = "/tmp"
 
 func TestCreateNewDatabase(t *testing.T) {
-	db := NewDatabase(DB_PATH)
+	db := NewDatabase(DbPath)
 
 	// add some test data
 	master := NewGroup("master")
@@ -34,7 +34,7 @@ func TestCreateNewDatabase(t *testing.T) {
 	}
 
 	// load the data back from disk again
-	db2 := NewDatabase(DB_PATH)
+	db2 := NewDatabase(DbPath)
 	if err := db2.Load(); err != nil {
 		assert.Fail(t, fmt.Sprintf("failed load db file: %e", err))
 	}

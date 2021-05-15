@@ -23,11 +23,11 @@ func (s *SuccessStruct) UnmarshalJSON(data []byte) error {
 }
 
 type FailureStruct struct {
-	Id   string
+	ID   string
 	Name string
 }
 
 func TestCanMarshal(t *testing.T) {
 	assert.True(t, CanMarshal(SuccessStruct{ID: "1", Name: "Success test"}))
-	assert.False(t, CanMarshal(FailureStruct{Id: "2", Name: "Failure test"}))
+	assert.False(t, CanMarshal(FailureStruct{ID: "2", Name: "Failure test"}))
 }

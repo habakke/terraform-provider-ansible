@@ -7,13 +7,13 @@ import (
 	"os"
 )
 
-// Ansible hosts database
+// Database is an internal structure to represent the contents of an Ansible hosts.ini file
 type Database struct {
 	dbFile string
 	groups map[string]Group
 }
 
-// Create a new database
+// NewDatabase creates a new database
 func NewDatabase(path string) *Database {
 	return &Database{
 		dbFile: fmt.Sprintf("%s%sterraform-provider-ansible.json", path, string(os.PathSeparator)),
@@ -21,7 +21,7 @@ func NewDatabase(path string) *Database {
 	}
 }
 
-// Check if the database exists
+// Exists checks if the database exists
 func (s *Database) Exists() bool {
 	_, err := os.Stat(s.dbFile)
 	return err == nil
@@ -32,7 +32,7 @@ func (s *Database) Path() string {
 	return s.dbFile
 }
 
-// Add a new ansible group to the database
+// AddGroup adds a new ansible group to the database
 func (s *Database) AddGroup(group Group) error {
 	if _, ok := s.groups[group.GetID()]; ok {
 		return fmt.Errorf("group '%s' already exists", group.GetID())
@@ -42,12 +42,12 @@ func (s *Database) AddGroup(group Group) error {
 	return nil
 }
 
-// Update an existing ansible group in the database
+// UpdateGroup updates an existing ansible group in the database
 func (s *Database) UpdateGroup(group Group) {
 	s.groups[group.GetID()] = group
 }
 
-// Remove an existing ansible group from the database
+// RemoveGroup removes an existing ansible group from the database
 func (s *Database) RemoveGroup(group Group) error {
 	if _, ok := s.groups[group.GetID()]; !ok {
 		return nil
@@ -57,7 +57,7 @@ func (s *Database) RemoveGroup(group Group) error {
 	return nil
 }
 
-// Find a group with the specified ID in the database
+// Group returns a Group with the specified ID in the database
 func (s *Database) Group(id string) *Group {
 	if val, ok := s.groups[id]; !ok {
 		return nil
@@ -66,7 +66,7 @@ func (s *Database) Group(id string) *Group {
 	}
 }
 
-// Find a host entry in the database by its ID and return the entry and which group it belongs to
+// FindEntryByID tries to locate a host entry in the database by its ID and return the entry and which Group it belongs to
 func (s *Database) FindEntryByID(id string) (*Group, *Entity, error) {
 	for _, v := range s.groups {
 		if e := v.Entry(id); e != nil {
@@ -76,7 +76,7 @@ func (s *Database) FindEntryByID(id string) (*Group, *Entity, error) {
 	return nil, nil, fmt.Errorf("entry with GetID '%s' could not be found", id)
 }
 
-// Find a group in the database by its name
+// FindGroupByName tries to locate a Group in the database by its name
 func (s *Database) FindGroupByName(name string) (*Group, error) {
 	for k, v := range s.groups {
 		if v.GetName() == name {
@@ -87,12 +87,12 @@ func (s *Database) FindGroupByName(name string) (*Group, error) {
 	return nil, fmt.Errorf("group with name '%s' could not be found", name)
 }
 
-// Get a map of all the groups in the database
+// AllGroups returns a map of all the Groups in the database
 func (s *Database) AllGroups() *map[string]Group {
 	return &s.groups
 }
 
-// Save the current in-memory version of the databse to disk
+// Commit the current in-memory version of the database to disk
 func (s *Database) Commit() error {
 	// Commit JSON to disk
 	if jsonString, err := json.MarshalIndent(s.groups, "", "\t"); err != nil {

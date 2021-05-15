@@ -38,7 +38,7 @@ var rootLogger zerolog.Logger
 // IMPORTANT:  this variable is set by the ConfigureLogger function.  Be sure that it has run.
 var logLevels map[string]string
 
-// Configure the debug logger for this provider.  The goal here is to enable selective amounts
+// ConfigureLogger configures the debug logger for this provider.  The goal here is to enable selective amounts
 // of output for targeted debugging without overwhelming with data from sources the user/developer
 // doesn't care about.
 //
@@ -171,7 +171,7 @@ func ConfigureLogger(enableOutput bool, logPath string, inputLogLevels map[strin
 	rootLogger.Info().Msgf("Logging Started. Root Logger Set to level %v", rootLevel)
 }
 
-// Create a sublogger from the rootLogger
+// CreateSubLogger creates a sublogger from the rootLogger
 // This is helpful as it allows for custom logging level for each component/part of the system.
 //
 // The loggerName string is used to set the name of the logger in message outputs (as a key-val pair) but

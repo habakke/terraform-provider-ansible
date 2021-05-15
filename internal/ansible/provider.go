@@ -15,7 +15,7 @@ type providerConfiguration struct {
 	LogLevels map[string]string
 }
 
-// The terraform provider definition
+// Provider represents a terraform provider definition
 func Provider() terraform.ResourceProvider {
 	p := &schema.Provider{
 		Schema: map[string]*schema.Schema{

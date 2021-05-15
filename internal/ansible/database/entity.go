@@ -1,6 +1,6 @@
 package database
 
-// Interface representing an entity that could be a group member in the database
+// Entity interface represents an Entity that could be a group member in the database
 type Entity interface {
 	GetID() string
 	Type() string

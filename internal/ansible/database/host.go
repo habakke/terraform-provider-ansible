@@ -2,13 +2,13 @@ package database
 
 import "encoding/json"
 
-// Ansible Host
+// Host represents an Ansible host in the hosts.ini file
 type Host struct {
 	id   Identity
 	name string
 }
 
-// Create a new Host with the given name, where name is IP or hostname
+// NewHost creates a new Host with the given name, where name is IP or hostname
 func NewHost(name string) *Host {
 	return &Host{
 		id:   *NewIdentity(),
@@ -16,27 +16,27 @@ func NewHost(name string) *Host {
 	}
 }
 
-// Returns the ID of the Host
+// GetID returns the ID of the Host
 func (s *Host) GetID() string {
 	return s.id.GetID()
 }
 
-// Returns the name of the Host
+// GetName returns the name of the Host
 func (s *Host) GetName() string {
 	return s.name
 }
 
-// Sets the name of the Host
+// SetName sets the name of the Host
 func (s *Host) SetName(name string) {
 	s.name = name
 }
 
-// Returns the Entity type of the Host
+// Type returns the Entity type of the Host
 func (s *Host) Type() string {
 	return "HOST"
 }
 
-// Marshals the Host to JSON
+// MarshalJSON marshals an Host to a JSON byte array
 func (s Host) MarshalJSON() ([]byte, error) {
 	aux := &struct {
 		ID   Identity `json:"id"`
@@ -55,7 +55,7 @@ func (s Host) MarshalJSON() ([]byte, error) {
 	}
 }
 
-// Unmarshal a Host from JSON
+// UnmarshalJSON returns an Host from a JSON byte array
 func (s *Host) UnmarshalJSON(data []byte) error {
 	aux := &struct {
 		ID   Identity `json:"id"`

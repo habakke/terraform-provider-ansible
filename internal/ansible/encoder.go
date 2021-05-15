@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// The Encode function encodes the database to an Ansible compatible hosts.ini file
+// Encode function encodes the database to an Ansible compatible hosts.ini file
 func Encode(file string, database *database.Database) error {
 	var s string
 	for _, v := range *database.AllGroups() {

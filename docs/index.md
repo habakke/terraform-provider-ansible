@@ -8,7 +8,7 @@ an inventory to be consumed by ansible during provisioning.
 ```terraform
 terraform {
   required_providers {
-    ansible = "~> 1.0.2"
+    ansible = "~> 1.0.9"
   }
 }
 

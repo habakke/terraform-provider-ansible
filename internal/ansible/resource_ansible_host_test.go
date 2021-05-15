@@ -96,7 +96,7 @@ func testAnsibleHostDestroy(s *terraform.State) error {
 }
 
 func testAnsibleHostBasic() string {
-	return fmt.Sprintf(`
+	return `
 provider "ansible" {
   path = "/tmp"
 }
@@ -125,11 +125,11 @@ resource "ansible_host" "k3s-master-1" {
   inventory = ansible_inventory.cluster.id
   group = ansible_group.master.id
 }
-`)
+`
 }
 
 func testAnsibleHostUpdate() string {
-	return fmt.Sprintf(`
+	return `
 provider "ansible" {
   path = "/tmp"
 }
@@ -158,7 +158,7 @@ resource "ansible_host" "k3s-master-1" {
   inventory = ansible_inventory.cluster.id
   group = ansible_group.master.id
 }
-`)
+`
 }
 
 func testAnsibleHostExists(resource string) resource.TestCheckFunc {

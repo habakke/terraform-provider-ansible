@@ -87,7 +87,7 @@ func testAnsibleGroupDestroy(s *terraform.State) error {
 }
 
 func testAnsibleGroupBasic() string {
-	return fmt.Sprintf(`
+	return `
 provider "ansible" {
   path = "/tmp"
 }
@@ -109,11 +109,11 @@ resource "ansible_group" "master" {
   name = "master"
   inventory = ansible_inventory.cluster.id
 }
-`)
+`
 }
 
 func testAnsibleGroupUpdate() string {
-	return fmt.Sprintf(`
+	return `
 provider "ansible" {
   path = "/tmp"
 }
@@ -135,7 +135,7 @@ resource "ansible_group" "master" {
   name = "master2"
   inventory = ansible_inventory.cluster.id
 }
-`)
+`
 }
 
 func testAnsibleGroupExists(resource string) resource.TestCheckFunc {

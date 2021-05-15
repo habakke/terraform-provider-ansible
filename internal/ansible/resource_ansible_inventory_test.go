@@ -85,7 +85,7 @@ func testAnsibleInventoryDestroy(s *terraform.State) error {
 }
 
 func testAnsibleInventoryBasic() string {
-	return fmt.Sprintf(`
+	return `
 provider "ansible" {
   path = "/tmp"
 }
@@ -101,11 +101,11 @@ resource "ansible_inventory" "cluster" {
     extra_agent_args: ""
   EOT
 }
-`)
+`
 }
 
 func testAnsibleInventoryUpdate() string {
-	return fmt.Sprintf(`
+	return `
 provider "ansible" {
   path = "/tmp"
 }
@@ -121,7 +121,7 @@ resource "ansible_inventory" "cluster" {
     extra_agent_args: ""
   EOT
 }
-`)
+`
 }
 
 func testAnsibleInventoryExists(resource string) resource.TestCheckFunc {

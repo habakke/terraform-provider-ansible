@@ -13,15 +13,17 @@ func TestCreateNewDatabase(t *testing.T) {
 
 	// add some test data
 	master := NewGroup("master")
-	_ = master.AddEntity(NewHost("192.168.0.180"))
+	variables := make(map[string]interface{})
+	variables["test"] = "this is a test"
+	_ = master.AddEntity(NewHost("192.168.0.180", variables))
 	_ = db.AddGroup(*master)
 
 	node := NewGroup("node")
-	_ = node.AddEntity(NewHost("192.168.0.181"))
-	_ = node.AddEntity(NewHost("192.168.0.182"))
-	_ = node.AddEntity(NewHost("192.168.0.183"))
-	_ = node.AddEntity(NewHost("192.168.0.184"))
-	_ = node.AddEntity(NewHost("192.168.0.185"))
+	_ = node.AddEntity(NewHost("192.168.0.181", nil))
+	_ = node.AddEntity(NewHost("192.168.0.182", nil))
+	_ = node.AddEntity(NewHost("192.168.0.183", nil))
+	_ = node.AddEntity(NewHost("192.168.0.184", nil))
+	_ = node.AddEntity(NewHost("192.168.0.185", nil))
 	_ = db.AddGroup(*node)
 
 	groupInGroup := NewGroup("k3s_cluster:children")
@@ -44,6 +46,13 @@ func TestCreateNewDatabase(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "master", g1.GetName())
 	assert.Equal(t, 1, len(g1.entries))
+
+	e, err := g1.FindEntityByName("192.168.0.180")
+	assert.Nil(t, err)
+	h, ok := e.(*Host)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(h.variables))
+	assert.Equal(t, "this is a test", h.variables["test"])
 
 	g2, err := db2.FindGroupByName("node")
 	assert.Nil(t, err)

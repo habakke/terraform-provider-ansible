@@ -12,32 +12,37 @@ const DbPath = "/tmp"
 const EncodeFile = "/tmp/encode_test.ini"
 
 const TestHostData = `[master]
-192.168.0.180
+192.168.0.180 name=master-1
+
 [node]
 192.168.0.181
 192.168.0.182
 192.168.0.183
 192.168.0.184
 192.168.0.185
+
 [k3s_cluster:children]
 master
 node
+
 `
 
 func TestExport(t *testing.T) {
 	db := database.NewDatabase(DbPath)
 
 	// add some test data
+	masterVariables := make(map[string]interface{})
+	masterVariables["name"] = "master-1"
 	master := database.NewGroup("master")
-	_ = master.AddEntity(database.NewHost("192.168.0.180"))
+	_ = master.AddEntity(database.NewHost("192.168.0.180", masterVariables))
 	_ = db.AddGroup(*master)
 
 	node := database.NewGroup("node")
-	_ = node.AddEntity(database.NewHost("192.168.0.181"))
-	_ = node.AddEntity(database.NewHost("192.168.0.182"))
-	_ = node.AddEntity(database.NewHost("192.168.0.183"))
-	_ = node.AddEntity(database.NewHost("192.168.0.184"))
-	_ = node.AddEntity(database.NewHost("192.168.0.185"))
+	_ = node.AddEntity(database.NewHost("192.168.0.181", nil))
+	_ = node.AddEntity(database.NewHost("192.168.0.182", nil))
+	_ = node.AddEntity(database.NewHost("192.168.0.183", nil))
+	_ = node.AddEntity(database.NewHost("192.168.0.184", nil))
+	_ = node.AddEntity(database.NewHost("192.168.0.185", nil))
 	_ = db.AddGroup(*node)
 
 	groupInGroup := database.NewGroup("k3s_cluster:children")

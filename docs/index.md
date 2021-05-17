@@ -8,7 +8,7 @@ an inventory to be consumed by ansible during provisioning.
 ```terraform
 terraform {
   required_providers {
-    ansible = "~> 1.0.9"
+    ansible = "~> 1.0"
   }
 }
 
@@ -45,5 +45,9 @@ resource "ansible_host" "k3s-master-1" {
   name = "k3s-master-1"
   inventory = ansible_inventory.cluster.id
   group = ansible_group.master.id
+  variables = {
+    name = "k3s-master-1"
+    role = "master"
+  }
 }
 ```

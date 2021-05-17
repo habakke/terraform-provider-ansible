@@ -22,6 +22,8 @@ func TestAnsibleHost_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ansible_host.k3s-master-1", "name", "k3s-master-1"),
 					resource.TestCheckResourceAttrSet("ansible_host.k3s-master-1", "group"),
 					resource.TestCheckResourceAttrSet("ansible_host.k3s-master-1", "inventory"),
+					resource.TestCheckResourceAttr("ansible_host.k3s-master-1", "variables.name", "k3s-master-1"),
+					resource.TestCheckResourceAttr("ansible_host.k3s-master-1", "variables.role", "master"),
 				),
 			},
 		},
@@ -41,6 +43,8 @@ func TestAnsibleHost_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("ansible_host.k3s-master-1", "name", "k3s-master-1"),
 					resource.TestCheckResourceAttrSet("ansible_host.k3s-master-1", "group"),
 					resource.TestCheckResourceAttrSet("ansible_host.k3s-master-1", "inventory"),
+					resource.TestCheckResourceAttr("ansible_host.k3s-master-1", "variables.name", "k3s-master-1"),
+					resource.TestCheckResourceAttr("ansible_host.k3s-master-1", "variables.role", "master"),
 				),
 			},
 			{
@@ -50,6 +54,8 @@ func TestAnsibleHost_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("ansible_host.k3s-master-1", "name", "k3s-master-1-edit"),
 					resource.TestCheckResourceAttrSet("ansible_host.k3s-master-1", "group"),
 					resource.TestCheckResourceAttrSet("ansible_host.k3s-master-1", "inventory"),
+					resource.TestCheckResourceAttr("ansible_host.k3s-master-1", "variables.name", "k3s-master-1-edit"),
+					resource.TestCheckResourceAttr("ansible_host.k3s-master-1", "variables.role", "master"),
 				),
 			},
 		},
@@ -124,6 +130,10 @@ resource "ansible_host" "k3s-master-1" {
   name = "k3s-master-1"
   inventory = ansible_inventory.cluster.id
   group = ansible_group.master.id
+  variables = {
+    name = "k3s-master-1"
+    role = "master"
+  }
 }
 `
 }
@@ -157,6 +167,10 @@ resource "ansible_host" "k3s-master-1" {
   name = "k3s-master-1-edit"
   inventory = ansible_inventory.cluster.id
   group = ansible_group.master.id
+  variables = {
+    name = "k3s-master-1-edit"
+    role = "master"
+  }
 }
 `
 }

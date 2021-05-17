@@ -10,7 +10,7 @@ import (
 type Group struct {
 	id      Identity
 	name    string
-	entries map[string]*Entity
+	entries map[string]Entity
 }
 
 // NewGroup returns a new Group with the given name
@@ -18,7 +18,7 @@ func NewGroup(name string) *Group {
 	return &Group{
 		id:      *NewIdentity(),
 		name:    name,
-		entries: make(map[string]*Entity),
+		entries: make(map[string]Entity),
 	}
 }
 
@@ -42,19 +42,28 @@ func (s *Group) Type() string {
 	return "GROUP"
 }
 
+// GetEntity returns an Entity by the id
+func (s *Group) GetEntity(id string) (Entity, error) {
+	if e, ok := s.entries[id]; ok {
+		return e, nil
+	}
+
+	return nil, fmt.Errorf("entity '%s' not found in group '%s'", id, s.name)
+}
+
 // AddEntity adds an Entity to the Group
 func (s *Group) AddEntity(entity Entity) error {
 	if _, ok := s.entries[entity.GetID()]; ok {
 		return fmt.Errorf("entity '%s' already exists in group", entity.GetID())
 	}
 
-	s.entries[entity.GetID()] = &entity
+	s.entries[entity.GetID()] = entity
 	return nil
 }
 
 // UpdateEntity updates an Entity in the Group
 func (s *Group) UpdateEntity(entity Entity) {
-	s.entries[entity.GetID()] = &entity
+	s.entries[entity.GetID()] = entity
 }
 
 // RemoveEntity removes an Entity from the Group
@@ -68,7 +77,7 @@ func (s *Group) RemoveEntity(entity Entity) error {
 }
 
 // Entry returns an Entity from the Group given its ID
-func (s *Group) Entry(id string) *Entity {
+func (s *Group) Entry(id string) Entity {
 	return s.entries[id]
 }
 
@@ -76,15 +85,35 @@ func (s *Group) Entry(id string) *Entity {
 func (s *Group) GetEntriesAsString() []string {
 	var stringEntries []string
 	for k := range s.entries {
-		stringEntries = append(stringEntries, (*s.entries[k]).GetName())
+		stringEntries = append(stringEntries, s.entries[k].GetName())
 	}
 	return stringEntries
 }
 
-func entriesMapToStringMap(entries map[string]*Entity) map[string]string {
+// GetEntities returns the name of all Entity in a group
+func (s *Group) GetEntities() []string {
+	keys := make([]string, 0, len(s.entries))
+	for k := range s.entries {
+		keys = append(keys, k)
+	}
+
+	return keys
+}
+
+func (s *Group) FindEntityByName(name string) (Entity, error) {
+	for k := range s.entries {
+		e := s.entries[k]
+		if e.GetName() == name {
+			return e, nil
+		}
+	}
+	return nil, fmt.Errorf("entity '%s' not found in group", name)
+}
+
+func entriesMapToStringMap(entries map[string]Entity) map[string]string {
 	stringMap := make(map[string]string)
 	for k, v := range entries {
-		if !util.CanMarshal(*v) {
+		if !util.CanMarshal(v) {
 			continue
 		}
 
@@ -131,7 +160,7 @@ func (s *Group) UnmarshalJSON(data []byte) error {
 
 	s.id = aux.ID
 	s.name = aux.Name
-	s.entries = make(map[string]*Entity)
+	s.entries = make(map[string]Entity)
 
 	for _, v := range aux.Entries {
 		typeAux := &struct {

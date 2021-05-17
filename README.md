@@ -8,7 +8,7 @@ an inventory to be consumed by ansible during provisioning.
 ```terraform
 terraform {
   required_providers {
-    ansible = "~> 1.0.3"
+    ansible = "~> 1.0.9"
   }
 }
 
@@ -45,13 +45,30 @@ resource "ansible_host" "k3s-master-1" {
   name = "k3s-master-1"
   inventory = ansible_inventory.cluster.id
   group = ansible_group.master.id
+  variables = {
+    name = "k3s-master-1"
+    role = "master"
+  }
 }
 ```
 
 ## How to build
+To build an test the plugin locally first create a `~/.terraformrc` file
 
 ```shell
-make build-dev version=v1.0.3
+provider_installation {
+
+  dev_overrides {
+    "habakke/ansible" = "/Users/habakke/.terraform.d/plugins"
+  }
+  direct {}
+}
+```
+
+Then build and install the plugin locally using
+
+```shell
+make install
 ```
 
 ## Running tests
@@ -70,4 +87,5 @@ make testacc
 
 ## TODO
 
+* Add support for Ansible group variables (https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#assigning-a-variable-to-many-machines-group-variables)
 * Add proper docs as seen in other community providers (https://github.com/paultyng/terraform-provider-unifi/tree/main/docs)

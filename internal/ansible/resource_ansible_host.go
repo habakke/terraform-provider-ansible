@@ -38,6 +38,15 @@ func ansibleHostResourceQuery() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			"variables": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					Required:     true,
+					ValidateFunc: validation.NoZeroValues,
+				},
+			},
 		},
 	}
 }
@@ -50,6 +59,7 @@ func ansibleHostResourceQueryCreate(d *schema.ResourceData, meta interface{}) er
 	name := d.Get("name").(string)
 	groupID := d.Get("group").(string)
 	inventoryRef := d.Get("inventory").(string)
+	variables := d.Get("variables").(map[string]interface{})
 
 	// create a logger for this function
 	logger, _ := util.CreateSubLogger("resource_host_create")
@@ -68,7 +78,7 @@ func ansibleHostResourceQueryCreate(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("unable to find group '%s'", groupID)
 	}
 
-	h := database.NewHost(name)
+	h := database.NewHost(name, variables)
 	g.UpdateEntity(h)
 	db.UpdateGroup(*g)
 
@@ -109,9 +119,13 @@ func ansibleHostResourceQueryRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("unable to find entry '%s': %e", id, err)
 	}
 
-	_ = d.Set("name", (*entry).GetName())
+	_ = d.Set("name", entry.GetName())
 	_ = d.Set("group", g.GetID())
 
+	h, ok := entry.(*database.Host)
+	if ok {
+		_ = d.Set("variables", h.GetVariables())
+	}
 	return nil
 }
 
@@ -123,6 +137,7 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 	name := d.Get("name").(string)
 	groupID := d.Get("group").(string)
 	inventoryRef := d.Get("inventory").(string)
+	variables := d.Get("variables").(map[string]interface{})
 
 	// create a logger for this function
 	logger, _ := util.CreateSubLogger("resource_host_update")
@@ -143,14 +158,14 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 
 	// check if name has changed
 	if d.HasChange("name") {
-		(*entry).SetName(name)
+		entry.SetName(name)
 		db.UpdateGroup(*g)
 	}
 
 	// check if group has changed
 	if d.HasChange("group") {
 		// remove host from old group
-		if err := g.RemoveEntity(*entry); err != nil {
+		if err := g.RemoveEntity(entry); err != nil {
 			return fmt.Errorf("failed remove entry from group '%s': %e", g.GetID(), err)
 		}
 		db.UpdateGroup(*g)
@@ -162,15 +177,26 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 		}
 
 		// update name and add entity to new group
-		ng.UpdateEntity(*entry)
+		ng.UpdateEntity(entry)
 	}
 
-	if d.HasChanges("name", "group") {
+	if d.HasChange("variables") {
+		h, ok := entry.(*database.Host)
+		if ok {
+			for k := range variables {
+				h.SetVariable(k, variables[k])
+			}
+		}
+		db.UpdateGroup(*g)
+	}
+
+	if d.HasChanges("name", "group", "variables") {
 		// Save and export database
 		if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
 			return err
 		}
 	}
+
 	conf.Mutex.Unlock()
 
 	return ansibleHostResourceQueryRead(d, meta)
@@ -204,7 +230,7 @@ func ansibleHostResourceQueryDelete(d *schema.ResourceData, meta interface{}) er
 		// can skip the removing it.
 
 		// remove entry from group
-		if err := g.RemoveEntity(*entry); err != nil {
+		if err := g.RemoveEntity(entry); err != nil {
 			return fmt.Errorf("unable to remove entry from group with id: %e", err)
 		}
 

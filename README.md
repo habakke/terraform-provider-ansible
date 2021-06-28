@@ -89,3 +89,4 @@ make testacc
 
 * Add support for Ansible group variables (https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#assigning-a-variable-to-many-machines-group-variables)
 * Add proper docs as seen in other community providers (https://github.com/paultyng/terraform-provider-unifi/tree/main/docs)
+* Upgrade to Terraform Plugin SDK v2 (https://www.terraform.io/docs/extend/guides/v2-upgrade-guide.html)

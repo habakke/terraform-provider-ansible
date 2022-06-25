@@ -1,7 +1,6 @@
 package inventory
 
 import (
-	"errors"
 	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/database"
 	"io/ioutil"
@@ -69,7 +68,7 @@ func (s *Inventory) GetAndLoadDatabase() (*database.Database, error) {
 // Load loads the inventory from disk
 func (s *Inventory) Load() (string, error) {
 	if _, err := os.Stat(s.groupVarsFile); os.IsNotExist(err) {
-		return "", errors.New("failed to load inventory because groupvars files doesn't exist")
+		return "", fmt.Errorf("failed to load inventory because groupvars files doesn't exist: %s", err.Error())
 	}
 
 	if data, err := ioutil.ReadFile(s.groupVarsFile); err != nil {
@@ -82,11 +81,11 @@ func (s *Inventory) Load() (string, error) {
 // Commit saves groupVars for the inventory to disk
 func (s *Inventory) Commit(groupVars string) error {
 	if err := os.MkdirAll(fmt.Sprintf("%s%sgroup_vars", s.fullPath, string(os.PathSeparator)), os.ModePerm); err != nil {
-		return errors.New("failed to create inventory path")
+		return fmt.Errorf("failed to create inventory path: %s", err.Error())
 	}
 
 	if err := ioutil.WriteFile(s.groupVarsFile, []byte(groupVars), os.ModePerm); err != nil {
-		return errors.New("failed to commit inventory to file")
+		return fmt.Errorf("failed to commit inventory to file: %s", err.Error())
 	}
 
 	return nil

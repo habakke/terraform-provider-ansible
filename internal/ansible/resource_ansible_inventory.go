@@ -44,7 +44,6 @@ func ansibleInventoryResourceQueryCreate(ctx context.Context, d *schema.Resource
 	i := inventory.NewInventory(conf.Path)
 	log.Debug().Str("id", i.GetID()).Msg("created new inventory")
 	if err := i.Commit(groupVars); err != nil {
-		log.Error().Err(err).Msg("failed to commit inventory")
 		return diag.Errorf("failed to commit inventory: %s", err.Error())
 	}
 	conf.Mutex.Unlock()

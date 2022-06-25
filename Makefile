@@ -27,6 +27,7 @@ lint:
 check: lint test
 
 sec:
+	go get -u github.com/securego/gosec/v2/cmd/gosec
 	$(shell go list -f {{.Target}} github.com/securego/gosec/v2/cmd/gosec) -fmt=golint ./...
 
 build-dev:

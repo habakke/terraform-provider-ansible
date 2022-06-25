@@ -32,7 +32,7 @@ func TestCreateNewDatabase(t *testing.T) {
 	_ = db.AddGroup(*groupInGroup)
 
 	if err := db.Commit(); err != nil {
-		assert.Fail(t, fmt.Sprintf("%s", err.Error()))
+		assert.Fail(t, err.Error())
 	}
 
 	// load the data back from disk again

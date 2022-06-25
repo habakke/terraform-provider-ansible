@@ -24,6 +24,6 @@ func testAnsiblePreCheck(t *testing.T) {
 
 func TestProvider(t *testing.T) {
 	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
-		assert.Fail(t, fmt.Sprintf("provider internal validation failed: %e", err))
+		assert.Fail(t, fmt.Sprintf("provider internal validation failed: %s", err.Error()))
 	}
 }

@@ -99,7 +99,7 @@ func (s *Inventory) Delete() error {
 	}
 
 	if err := os.RemoveAll(s.fullPath); err != nil {
-		return fmt.Errorf("failed to delete inventory: %e", err)
+		return fmt.Errorf("failed to delete inventory: %s", err.Error())
 	}
 
 	return nil

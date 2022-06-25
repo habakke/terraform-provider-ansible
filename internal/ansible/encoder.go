@@ -25,7 +25,7 @@ func Encode(file string, database *database.Database) error {
 
 				es, err := encodeEntity(e)
 				if err != nil {
-					log.Fatalf("failed to encode entity %e", err)
+					log.Fatalf("failed to encode entity %s", err.Error())
 				}
 				s = s + fmt.Sprintf("%s\n", es)
 			}

@@ -32,13 +32,13 @@ func TestCreateNewDatabase(t *testing.T) {
 	_ = db.AddGroup(*groupInGroup)
 
 	if err := db.Commit(); err != nil {
-		assert.Fail(t, fmt.Sprintf("%e", err))
+		assert.Fail(t, fmt.Sprintf("%s", err.Error()))
 	}
 
 	// load the data back from disk again
 	db2 := NewDatabase(DbPath)
 	if err := db2.Load(); err != nil {
-		assert.Fail(t, fmt.Sprintf("failed load db file: %e", err))
+		assert.Fail(t, fmt.Sprintf("failed load db file: %s", err.Error()))
 	}
 
 	assert.Equal(t, 3, len(db2.groups))

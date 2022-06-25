@@ -54,11 +54,11 @@ func ansibleGroupResourceQueryCreate(d *schema.ResourceData, meta interface{}) e
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
+		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 	g := database.NewGroup(name)
 	if err := db.AddGroup(*g); err != nil {
-		return fmt.Errorf("failed to add group '%s': %e", name, err)
+		return fmt.Errorf("failed to add group '%s': %s", name, err.Error())
 	}
 
 	// Save and export database
@@ -89,7 +89,7 @@ func ansibleGroupResourceQueryRead(d *schema.ResourceData, meta interface{}) err
 	conf.Mutex.Unlock()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
+		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 
 	g := db.Group(d.Id())
@@ -120,7 +120,7 @@ func ansibleGroupResourceQueryUpdate(d *schema.ResourceData, meta interface{}) e
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
+		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 
 	g := db.Group(d.Id())
@@ -158,7 +158,7 @@ func ansibleGroupResourceQueryDelete(d *schema.ResourceData, meta interface{}) e
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
+		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 
 	id := d.Id()
@@ -168,7 +168,7 @@ func ansibleGroupResourceQueryDelete(d *schema.ResourceData, meta interface{}) e
 	} else {
 		// if we find the group we remove it, if we can't find it we can skip removing it
 		if err := db.RemoveGroup(*g); err != nil {
-			return fmt.Errorf("unable to delete group '%s': %e", g.GetName(), err)
+			return fmt.Errorf("unable to delete group '%s': %s", g.GetName(), err.Error())
 		}
 	}
 

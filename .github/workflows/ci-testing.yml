@@ -5,11 +5,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.16
+          go-version: 1.18
       - name: Cache Go modules
         uses: actions/cache@preview
         with:
@@ -22,7 +22,7 @@ jobs:
       - name: test
         run: make test
       - name: Upload Coverage report to CodeCov
-        uses: codecov/codecov-action@v2.0.2
+        uses: codecov/codecov-action@v3.1.0
         with:
           token: ${{secrets.CODECOV_TOKEN}}
           file: ./build/cover.out
@@ -31,11 +31,11 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.16
+          go-version: 1.18
       - name: Cache Go modules
         uses: actions/cache@preview
         with:

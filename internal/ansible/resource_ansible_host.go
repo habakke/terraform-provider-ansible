@@ -70,7 +70,7 @@ func ansibleHostResourceQueryCreate(d *schema.ResourceData, meta interface{}) er
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
+		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 
 	g := db.Group(groupID)
@@ -110,13 +110,13 @@ func ansibleHostResourceQueryRead(d *schema.ResourceData, meta interface{}) erro
 	conf.Mutex.Unlock()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
+		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 
 	id := d.Id()
 	g, entry, err := db.FindEntryByID(id)
 	if err != nil {
-		return fmt.Errorf("unable to find entry '%s': %e", id, err)
+		return fmt.Errorf("unable to find entry '%s': %s", id, err.Error())
 	}
 
 	_ = d.Set("name", entry.GetName())
@@ -148,12 +148,12 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
+		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 
 	g, entry, err := db.FindEntryByID(d.Id())
 	if err != nil {
-		return fmt.Errorf("unable to find entry '%s': %e", d.Id(), err)
+		return fmt.Errorf("unable to find entry '%s': %s", d.Id(), err.Error())
 	}
 
 	// check if name has changed
@@ -166,14 +166,14 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 	if d.HasChange("group") {
 		// remove host from old group
 		if err := g.RemoveEntity(entry); err != nil {
-			return fmt.Errorf("failed remove entry from group '%s': %e", g.GetID(), err)
+			return fmt.Errorf("failed remove entry from group '%s': %s", g.GetID(), err.Error())
 		}
 		db.UpdateGroup(*g)
 
 		// load new group
 		ng := db.Group(groupID)
 		if ng == nil {
-			return fmt.Errorf("failed to locate group '%s': %e", groupID, err)
+			return fmt.Errorf("failed to locate group '%s': %s", groupID, err.Error())
 		}
 
 		// update name and add entity to new group
@@ -218,7 +218,7 @@ func ansibleHostResourceQueryDelete(d *schema.ResourceData, meta interface{}) er
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %e", inventoryRef, err)
+		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 
 	id := d.Id()
@@ -231,7 +231,7 @@ func ansibleHostResourceQueryDelete(d *schema.ResourceData, meta interface{}) er
 
 		// remove entry from group
 		if err := g.RemoveEntity(entry); err != nil {
-			return fmt.Errorf("unable to remove entry from group with id: %e", err)
+			return fmt.Errorf("unable to remove entry from group with id: %s", err.Error())
 		}
 
 		// update group

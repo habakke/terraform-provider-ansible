@@ -52,11 +52,11 @@ func TestExport(t *testing.T) {
 
 	// run test
 	if err := Encode(EncodeFile, db); err != nil {
-		assert.Fail(t, fmt.Sprintf("failed to encode file: %e", err))
+		assert.Fail(t, fmt.Sprintf("failed to encode file: %s", err.Error()))
 	}
 
 	if data, err := ioutil.ReadFile(EncodeFile); err != nil {
-		assert.Fail(t, fmt.Sprintf("failed read encoded file: %e", err))
+		assert.Fail(t, fmt.Sprintf("failed read encoded file: %s", err.Error()))
 	} else {
 		fmt.Print(string(data))
 		assert.Equal(t, len(TestHostData), len(string(data)))

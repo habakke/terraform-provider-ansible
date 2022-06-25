@@ -49,7 +49,7 @@ func ansibleInventoryResourceQueryCreate(d *schema.ResourceData, meta interface{
 	logger.Debug().Str("id", i.GetID()).Msg("created new inventory")
 	if err := i.Commit(groupVars); err != nil {
 		logger.Error().Err(err).Msg("failed to commit inventory")
-		return fmt.Errorf("failed to commit inventory: %e", err)
+		return fmt.Errorf("failed to commit inventory: %s", err.Error())
 	}
 	conf.Mutex.Unlock()
 
@@ -74,7 +74,7 @@ func ansibleInventoryResourceQueryRead(d *schema.ResourceData, meta interface{})
 	groupVars, err := i.Load()
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load inventory")
-		return fmt.Errorf("failed to load inventory '%s': %e", id, err)
+		return fmt.Errorf("failed to load inventory '%s': %s", id, err.Error())
 	}
 	conf.Mutex.Unlock()
 
@@ -100,7 +100,7 @@ func ansibleInventoryResourceQueryUpdate(d *schema.ResourceData, meta interface{
 		conf.Mutex.Lock()
 		if err := i.Commit(groupVars); err != nil {
 			logger.Error().Err(err).Msg("failed to update inventory")
-			return fmt.Errorf("failed to update inventory: %e", err)
+			return fmt.Errorf("failed to update inventory: %s", err.Error())
 		}
 		conf.Mutex.Unlock()
 	}
@@ -123,7 +123,7 @@ func ansibleInventoryResourceQueryDelete(d *schema.ResourceData, meta interface{
 	i := inventory.LoadFromID(id)
 	if err := i.Delete(); err != nil {
 		logger.Error().Err(err).Msg("failed to delete inventory")
-		return fmt.Errorf("failed to delete inventory: %e", err)
+		return fmt.Errorf("failed to delete inventory: %s", err.Error())
 	}
 	conf.Mutex.Unlock()
 	return nil

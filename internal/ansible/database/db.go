@@ -96,10 +96,10 @@ func (s *Database) AllGroups() *map[string]Group {
 func (s *Database) Commit() error {
 	// Commit JSON to disk
 	if jsonString, err := json.MarshalIndent(s.groups, "", "\t"); err != nil {
-		return fmt.Errorf("failed to serialize database to '%s': %e", s.dbFile, err)
+		return fmt.Errorf("failed to serialize database to '%s': %s", s.dbFile, err.Error())
 	} else {
 		if err := ioutil.WriteFile(s.dbFile, jsonString, os.ModePerm); err != nil {
-			return fmt.Errorf("failed to write database file '%s': %e", s.dbFile, err)
+			return fmt.Errorf("failed to write database file '%s': %s", s.dbFile, err.Error())
 		}
 	}
 
@@ -115,7 +115,7 @@ func (s *Database) Load() error {
 	s.groups = map[string]Group{}
 	jsonString, err := ioutil.ReadFile(s.dbFile)
 	if err != nil {
-		return fmt.Errorf("failed to load database file '%s': %e", s.dbFile, err)
+		return fmt.Errorf("failed to load database file '%s': %s", s.dbFile, err.Error())
 	}
 
 	if len(jsonString) == 0 {
@@ -123,7 +123,7 @@ func (s *Database) Load() error {
 	}
 
 	if err := json.Unmarshal(jsonString, &s.groups); err != nil {
-		return fmt.Errorf("failed to deserialize database '%s' to json: %e", s.dbFile, err)
+		return fmt.Errorf("failed to deserialize database '%s' to json: %s", s.dbFile, err.Error())
 	}
 
 	return nil

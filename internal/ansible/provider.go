@@ -1,46 +1,35 @@
 package ansible
 
 import (
-	"fmt"
+	"context"
 	"github.com/habakke/terraform-ansible-provider/internal/util"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"sync"
 )
 
 type providerConfiguration struct {
-	Path      string
-	Mutex     *sync.Mutex
-	LogFile   string
-	LogLevels map[string]string
+	Path  string
+	Mutex *sync.Mutex
 }
 
 // Provider represents a terraform provider definition
-func Provider() terraform.ResourceProvider {
-	p := &schema.Provider{
+func Provider() *schema.Provider {
+	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"path": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("INVENTORY_PATH", nil),
-				Description: "Path to where the ansible inventory files are stored",
+				Type:         schema.TypeString,
+				Required:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("INVENTORY_PATH", nil),
+				ValidateFunc: validation.NoZeroValues,
+				Description:  "Path to where the ansible inventory files are stored",
 			},
-			"log_enable": {
+			"log_caller": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Description: "Include calling function in log entries",
 				Default:     false,
-				Description: "Should logging be enabled or not",
-			},
-			"log_levels": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Description: "Which log levels should be enabled ERROR, WARN, INFO, DEBUG, TRACE",
-			},
-			"log_file": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "terraform-provider-ansible.log",
-				Description: "Name of file where log will be stored",
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{},
@@ -49,41 +38,25 @@ func Provider() terraform.ResourceProvider {
 			"ansible_group":     ansibleGroupResourceQuery(),
 			"ansible_host":      ansibleHostResourceQuery(),
 		},
+		ConfigureContextFunc: providerConfigure,
 	}
-	p.ConfigureFunc = providerConfigure(p)
-	return p
 }
 
-func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
-	return func(d *schema.ResourceData) (interface{}, error) {
+func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	// Warning or errors can be collected in a slice type
+	var diags diag.Diagnostics
 
-		// look to see what logging we should be outputting according to the provider configuration
-		logLevels := make(map[string]string)
-		for logger, level := range d.Get("log_levels").(map[string]interface{}) {
-			levelAsString, ok := level.(string)
-			if ok {
-				logLevels[logger] = levelAsString
-			} else {
-				return nil, fmt.Errorf("invalid logging level %v for %v. Be sure to use a string", level, logger)
-			}
-		}
+	// configure logging
+	logCaller := util.ResourceToBool(d, "log_caller")
+	util.ConfigureTerraformProviderLogging(logCaller)
 
-		// configure logging
-		// NOTE: if enable is false here, the configuration will squash all output
-		util.ConfigureLogger(
-			d.Get("log_enable").(bool),
-			d.Get("log_file").(string),
-			logLevels,
-		)
+	// load provider config vars
+	path := util.ResourceToString(d, "path")
 
-		path := d.Get("path").(string)
-		var mut sync.Mutex
-		conf := providerConfiguration{
-			Path:      path,
-			Mutex:     &mut,
-			LogFile:   d.Get("log_file").(string),
-			LogLevels: logLevels,
-		}
-		return conf, nil
+	var mut sync.Mutex
+	conf := providerConfiguration{
+		Path:  path,
+		Mutex: &mut,
 	}
+	return conf, diags
 }

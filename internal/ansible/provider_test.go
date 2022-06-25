@@ -1,29 +1,43 @@
 package ansible
 
 import (
-	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/stretchr/testify/assert"
+	"github.com/habakke/terraform-ansible-provider/internal/util"
+	"os"
+	"strings"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var testAnsibleProviders map[string]terraform.ResourceProvider
+var testAnsibleProviders map[string]*schema.Provider
 var testAnsibleProvider *schema.Provider
 
+func TestMain(m *testing.M) {
+	util.ConfigureLogging(util.GetEnv("LOGLEVEL", "info"), true)
+	code := m.Run()
+	os.Exit(code)
+}
+
 func init() {
-	testAnsibleProvider = Provider().(*schema.Provider)
-	testAnsibleProviders = map[string]terraform.ResourceProvider{
+
+	testAnsibleProvider = Provider()
+	testAnsibleProviders = map[string]*schema.Provider{
 		"ansible": testAnsibleProvider,
 	}
 }
 
-func testAnsiblePreCheck(t *testing.T) {
-	// TODO Add pre checks here.
+//nolint:deadcode,unused
+func testAnsiblePreCheck(t *testing.T, resourceName string) {
+	r := testAnsibleProvider.ResourcesMap[strings.Split(resourceName, ".")[0]]
+	d := testAnsibleProvider.DataSourcesMap[strings.Split(resourceName, ".")[0]]
+
+	if r != nil && d != nil {
+		t.Fatalf("missing resource '%s'", resourceName)
+	}
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
-		assert.Fail(t, fmt.Sprintf("provider internal validation failed: %s", err.Error()))
+	if err := Provider().InternalValidate(); err != nil {
+		t.Fatalf("provider internal validation failed: %v", err)
 	}
 }

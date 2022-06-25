@@ -2,20 +2,20 @@ package ansible
 
 import (
 	"context"
-	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/inventory"
-	"github.com/habakke/terraform-ansible-provider/internal/util"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/rs/zerolog/log"
 	"time"
 )
 
 func ansibleInventoryResourceQuery() *schema.Resource {
 	return &schema.Resource{
-		Create: ansibleInventoryResourceQueryCreate,
-		Read:   ansibleInventoryResourceQueryRead,
-		Update: ansibleInventoryResourceQueryUpdate,
-		Delete: ansibleInventoryResourceQueryDelete,
+		CreateContext: ansibleInventoryResourceQueryCreate,
+		ReadContext:   ansibleInventoryResourceQueryRead,
+		UpdateContext: ansibleInventoryResourceQueryUpdate,
+		DeleteContext: ansibleInventoryResourceQueryDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Second),
 			Update: schema.DefaultTimeout(10 * time.Second),
@@ -33,57 +33,50 @@ func ansibleInventoryResourceQuery() *schema.Resource {
 	}
 }
 
-func ansibleInventoryResourceQueryCreate(d *schema.ResourceData, meta interface{}) error {
+func ansibleInventoryResourceQueryCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	groupVars := d.Get("group_vars").(string)
 
-	// create a logger for this function
-	logger, _ := util.CreateSubLogger("resource_inventory_create")
-	logger.Debug().Str("path", conf.Path).Msg("invoking creation of inventory")
-
 	conf.Mutex.Lock()
 	i := inventory.NewInventory(conf.Path)
-	logger.Debug().Str("id", i.GetID()).Msg("created new inventory")
+	log.Debug().Str("id", i.GetID()).Msg("created new inventory")
 	if err := i.Commit(groupVars); err != nil {
-		logger.Error().Err(err).Msg("failed to commit inventory")
-		return fmt.Errorf("failed to commit inventory: %s", err.Error())
+		log.Error().Err(err).Msg("failed to commit inventory")
+		return diag.Errorf("failed to commit inventory: %s", err.Error())
 	}
 	conf.Mutex.Unlock()
 
 	d.SetId(i.GetID())
 	d.MarkNewResource()
-	return ansibleInventoryResourceQueryRead(d, meta)
+	return ansibleInventoryResourceQueryRead(ctx, d, meta)
 }
 
-func ansibleInventoryResourceQueryRead(d *schema.ResourceData, meta interface{}) error {
+func ansibleInventoryResourceQueryRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	id := d.Id()
 
-	// create a logger for this function
-	logger, _ := util.CreateSubLogger("resource_inventory_read")
-	logger.Debug().Str("id", d.Id()).Msg("reading configuration for inventory")
-
 	conf.Mutex.Lock()
 	i := inventory.LoadFromID(id)
 	groupVars, err := i.Load()
 	if err != nil {
-		logger.Error().Err(err).Msg("failed to load inventory")
-		return fmt.Errorf("failed to load inventory '%s': %s", id, err.Error())
+		log.Error().Err(err).Msg("failed to load inventory")
+		return diag.Errorf("failed to load inventory '%s': %s", id, err.Error())
 	}
 	conf.Mutex.Unlock()
 
 	_ = d.Set("group_vars", groupVars)
 
-	return nil
+	return diags
 }
 
-func ansibleInventoryResourceQueryUpdate(d *schema.ResourceData, meta interface{}) error {
+func ansibleInventoryResourceQueryUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -91,40 +84,33 @@ func ansibleInventoryResourceQueryUpdate(d *schema.ResourceData, meta interface{
 	id := d.Id()
 	groupVars := d.Get("group_vars").(string)
 
-	// create a logger for this function
-	logger, _ := util.CreateSubLogger("resource_host_update")
-	logger.Debug().Str("id", d.Id()).Str("groupVars", groupVars).Msg("updating configuration for inventory")
-
 	i := inventory.LoadFromID(id)
 	if d.HasChange("group_vars") {
 		conf.Mutex.Lock()
 		if err := i.Commit(groupVars); err != nil {
-			logger.Error().Err(err).Msg("failed to update inventory")
-			return fmt.Errorf("failed to update inventory: %s", err.Error())
+			log.Error().Err(err).Msg("failed to update inventory")
+			return diag.Errorf("failed to update inventory: %s", err.Error())
 		}
 		conf.Mutex.Unlock()
 	}
 
-	return ansibleInventoryResourceQueryRead(d, meta)
+	return ansibleInventoryResourceQueryRead(ctx, d, meta)
 }
 
-func ansibleInventoryResourceQueryDelete(d *schema.ResourceData, meta interface{}) error {
+func ansibleInventoryResourceQueryDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	id := d.Id()
 
-	// create a logger for this function
-	logger, _ := util.CreateSubLogger("resource_host_delete")
-	logger.Debug().Str("id", d.Id()).Msg("deleting inventory")
-
 	conf.Mutex.Lock()
 	i := inventory.LoadFromID(id)
 	if err := i.Delete(); err != nil {
-		logger.Error().Err(err).Msg("failed to delete inventory")
-		return fmt.Errorf("failed to delete inventory: %s", err.Error())
+		log.Error().Err(err).Msg("failed to delete inventory")
+		return diag.Errorf("failed to delete inventory: %s", err.Error())
 	}
 	conf.Mutex.Unlock()
-	return nil
+	return diags
 }

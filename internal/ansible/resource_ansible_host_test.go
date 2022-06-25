@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/database"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/inventory"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"testing"
 )
 
 func TestAnsibleHost_Basic(t *testing.T) {
+	resourceName := "ansible_host.k3s-master-1"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t) },
+		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
 		Providers:    testAnsibleProviders,
 		CheckDestroy: testAnsibleHostDestroy,
 		Steps: []resource.TestStep{
@@ -31,8 +32,9 @@ func TestAnsibleHost_Basic(t *testing.T) {
 }
 
 func TestAnsibleHost_Update(t *testing.T) {
+	resourceName := "ansible_host.k3s-master-1"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t) },
+		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
 		Providers:    testAnsibleProviders,
 		CheckDestroy: testAnsibleHostDestroy,
 		Steps: []resource.TestStep{

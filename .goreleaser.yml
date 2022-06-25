@@ -8,25 +8,17 @@ builds:
     flags:
       - -trimpath
     goos:
-      - freebsd
       - windows
       - linux
       - darwin
     goarch:
       - amd64
-      - 386
-      - arm
       - arm64
-    goarm:
-      - 7
     env:
       - CGO_ENABLED=0
     mod_timestamp: '{{ .CommitTimestamp }}'
     ldflags:
-      - '-s -w -X main.version={{.Version}} -X main.commit={{.Branch}}@{{.ShortCommit}} -X main.buildTime={{.Date}} -X main.builtBy=CI'
-    ignore:
-      - goos: darwin
-        goarch: 386
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Branch}}@{{.ShortCommit}} -X main.buildTime={{.Date}} -X main.builtBy={{ .Env.USER }}'
 archives:
   - format: zip
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'

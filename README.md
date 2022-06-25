@@ -8,18 +8,13 @@ an inventory to be consumed by ansible during provisioning.
 ```terraform
 terraform {
   required_providers {
-    ansible = "~> 1.0.9"
+    ansible = "~> 1.0"
   }
 }
 
 provider "ansible" {
   path            = "/data/ansible/inventory"
-  log_enable      = false
-  log_file        = "terraform-provider-ansible.log"
-  log_levels      = {
-    _default = "debug"
-    _capturelog = ""
-  }
+  log_caller      = false
 }
 
 resource "ansible_inventory" "cluster" {
@@ -89,4 +84,3 @@ make testacc
 
 * Add support for Ansible group variables (https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#assigning-a-variable-to-many-machines-group-variables)
 * Add proper docs as seen in other community providers (https://github.com/paultyng/terraform-provider-unifi/tree/main/docs)
-* Upgrade to Terraform Plugin SDK v2 (https://www.terraform.io/docs/extend/guides/v2-upgrade-guide.html)

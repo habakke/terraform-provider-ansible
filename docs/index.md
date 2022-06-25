@@ -14,12 +14,7 @@ terraform {
 
 provider "ansible" {
   path            = "/data/ansible/inventory"
-  log_enable      = false
-  log_file        = "terraform-provider-ansible.log"
-  log_levels      = {
-    _default = "debug"
-    _capturelog = ""
-  }
+  log_caller      = false
 }
 
 resource "ansible_inventory" "cluster" {

@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible"
-	"github.com/habakke/terraform-ansible-provider/internal/util"
-	"github.com/hashicorp/terraform-plugin-sdk/plugin"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"github.com/rs/zerolog/log"
+	"os"
 )
 
 var (
@@ -17,12 +19,18 @@ var (
 func getVersionString(name string) string {
 	return fmt.Sprintf("%s %s (%s at %s by %s)", name, version, commit, buildTime, buildBy)
 }
-func main() {
-	// create a logger an log version string
-	logger, _ := util.CreateSubLogger("")
-	logger.Info().Msgf("%s", getVersionString("terraform-ansible-provider"))
 
+func main() {
+	path, err := os.Getwd()
+	if err != nil {
+		log.Fatal().Err(err).Msgf("failed to initialize provider: %s", err.Error())
+	}
+
+	log.Info().Msgf("%s", getVersionString("terraform-ansible-provider"))
+	log.Info().Msgf("%s", path)
 	plugin.Serve(&plugin.ServeOpts{
-		ProviderFunc: ansible.Provider,
+		ProviderFunc: func() *schema.Provider {
+			return ansible.Provider()
+		},
 	})
 }

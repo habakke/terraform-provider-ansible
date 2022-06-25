@@ -3,8 +3,8 @@ package ansible
 import (
 	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/inventory"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"testing"
 )
 
@@ -27,8 +27,9 @@ extra_agent_args: ""
 `
 
 func TestAnsibleInventory_Basic(t *testing.T) {
+	resourceName := "ansible_inventory.cluster"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t) },
+		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
 		Providers:    testAnsibleProviders,
 		CheckDestroy: testAnsibleInventoryDestroy,
 		Steps: []resource.TestStep{
@@ -45,8 +46,9 @@ func TestAnsibleInventory_Basic(t *testing.T) {
 }
 
 func TestAnsibleInventory_Update(t *testing.T) {
+	resourceName := "ansible_inventory.cluster"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t) },
+		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
 		Providers:    testAnsibleProviders,
 		CheckDestroy: testAnsibleInventoryDestroy,
 		Steps: []resource.TestStep{

@@ -2,21 +2,21 @@ package ansible
 
 import (
 	"context"
-	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/database"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/inventory"
-	"github.com/habakke/terraform-ansible-provider/internal/util"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/rs/zerolog/log"
 	"time"
 )
 
 func ansibleHostResourceQuery() *schema.Resource {
 	return &schema.Resource{
-		Create: ansibleHostResourceQueryCreate,
-		Read:   ansibleHostResourceQueryRead,
-		Update: ansibleHostResourceQueryUpdate,
-		Delete: ansibleHostResourceQueryDelete,
+		CreateContext: ansibleHostResourceQueryCreate,
+		ReadContext:   ansibleHostResourceQueryRead,
+		UpdateContext: ansibleHostResourceQueryUpdate,
+		DeleteContext: ansibleHostResourceQueryDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Second),
 			Update: schema.DefaultTimeout(10 * time.Second),
@@ -51,7 +51,7 @@ func ansibleHostResourceQuery() *schema.Resource {
 	}
 }
 
-func ansibleHostResourceQueryCreate(d *schema.ResourceData, meta interface{}) error {
+func ansibleHostResourceQueryCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -61,21 +61,17 @@ func ansibleHostResourceQueryCreate(d *schema.ResourceData, meta interface{}) er
 	inventoryRef := d.Get("inventory").(string)
 	variables := d.Get("variables").(map[string]interface{})
 
-	// create a logger for this function
-	logger, _ := util.CreateSubLogger("resource_host_create")
-	logger.Debug().Str("name", name).Str("group", groupID).Str("inventory", inventoryRef).Msg("invoking creation of host")
-
 	conf.Mutex.Lock()
 	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
-		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
+		log.Error().Err(err).Msg("failed to load database")
+		return diag.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 
 	g := db.Group(groupID)
 	if g == nil {
-		return fmt.Errorf("unable to find group '%s'", groupID)
+		return diag.Errorf("unable to find group '%s'", groupID)
 	}
 
 	h := database.NewHost(name, variables)
@@ -84,39 +80,36 @@ func ansibleHostResourceQueryCreate(d *schema.ResourceData, meta interface{}) er
 
 	// Save and export database
 	if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	conf.Mutex.Unlock()
 
 	d.SetId(h.GetID())
 	d.MarkNewResource()
-	return ansibleHostResourceQueryRead(d, meta)
+	return ansibleHostResourceQueryRead(ctx, d, meta)
 }
 
-func ansibleHostResourceQueryRead(d *schema.ResourceData, meta interface{}) error {
+func ansibleHostResourceQueryRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	inventoryRef := d.Get("inventory").(string)
 
-	// create a logger for this function
-	logger, _ := util.CreateSubLogger("resource_host_read")
-	logger.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("reading configuration for host")
-
 	conf.Mutex.Lock()
 	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	conf.Mutex.Unlock()
 	if err != nil {
-		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
+		log.Error().Err(err).Msg("failed to load database")
+		return diag.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 
 	id := d.Id()
 	g, entry, err := db.FindEntryByID(id)
 	if err != nil {
-		return fmt.Errorf("unable to find entry '%s': %s", id, err.Error())
+		return diag.Errorf("unable to find entry '%s': %s", id, err.Error())
 	}
 
 	_ = d.Set("name", entry.GetName())
@@ -126,10 +119,10 @@ func ansibleHostResourceQueryRead(d *schema.ResourceData, meta interface{}) erro
 	if ok {
 		_ = d.Set("variables", h.GetVariables())
 	}
-	return nil
+	return diags
 }
 
-func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) error {
+func ansibleHostResourceQueryUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -139,21 +132,17 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 	inventoryRef := d.Get("inventory").(string)
 	variables := d.Get("variables").(map[string]interface{})
 
-	// create a logger for this function
-	logger, _ := util.CreateSubLogger("resource_host_update")
-	logger.Debug().Str("id", d.Id()).Str("group", groupID).Str("inventory", inventoryRef).Msg("updating configuration for host")
-
 	conf.Mutex.Lock()
 	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
-		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
+		log.Error().Err(err).Msg("failed to load database")
+		return diag.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 
 	g, entry, err := db.FindEntryByID(d.Id())
 	if err != nil {
-		return fmt.Errorf("unable to find entry '%s': %s", d.Id(), err.Error())
+		return diag.Errorf("unable to find entry '%s': %s", d.Id(), err.Error())
 	}
 
 	// check if name has changed
@@ -166,14 +155,14 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 	if d.HasChange("group") {
 		// remove host from old group
 		if err := g.RemoveEntity(entry); err != nil {
-			return fmt.Errorf("failed remove entry from group '%s': %s", g.GetID(), err.Error())
+			return diag.Errorf("failed remove entry from group '%s': %s", g.GetID(), err.Error())
 		}
 		db.UpdateGroup(*g)
 
 		// load new group
 		ng := db.Group(groupID)
 		if ng == nil {
-			return fmt.Errorf("failed to locate group '%s': %s", groupID, err.Error())
+			return diag.Errorf("failed to locate group '%s': %s", groupID, err.Error())
 		}
 
 		// update name and add entity to new group
@@ -193,45 +182,42 @@ func ansibleHostResourceQueryUpdate(d *schema.ResourceData, meta interface{}) er
 	if d.HasChanges("name", "group", "variables") {
 		// Save and export database
 		if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	conf.Mutex.Unlock()
 
-	return ansibleHostResourceQueryRead(d, meta)
+	return ansibleHostResourceQueryRead(ctx, d, meta)
 }
 
-func ansibleHostResourceQueryDelete(d *schema.ResourceData, meta interface{}) error {
+func ansibleHostResourceQueryDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	conf := meta.(providerConfiguration)
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	inventoryRef := d.Get("inventory").(string)
 
-	// create a logger for this function
-	logger, _ := util.CreateSubLogger("resource_host_delete")
-	logger.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("deleting host")
-
 	conf.Mutex.Lock()
 	i := inventory.LoadFromID(inventoryRef)
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
-		logger.Error().Err(err).Msg("failed to load database")
-		return fmt.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
+		log.Error().Err(err).Msg("failed to load database")
+		return diag.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
 	}
 
 	id := d.Id()
 	g, entry, err := db.FindEntryByID(id)
 	if err != nil {
-		logger.Error().Err(err).Msg("cannot find host so unable to remove, but continuing anyway")
+		log.Error().Err(err).Msg("cannot find host so unable to remove, but continuing anyway")
 	} else {
 		// only remove host from group if we actually find it there. if we dont find it, then everything is ok and we
 		// can skip the removing it.
 
 		// remove entry from group
 		if err := g.RemoveEntity(entry); err != nil {
-			return fmt.Errorf("unable to remove entry from group with id: %s", err.Error())
+			return diag.Errorf("unable to remove entry from group with id: %s", err.Error())
 		}
 
 		// update group
@@ -240,9 +226,9 @@ func ansibleHostResourceQueryDelete(d *schema.ResourceData, meta interface{}) er
 
 	// Save and export database
 	if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	conf.Mutex.Unlock()
 
-	return nil
+	return diags
 }

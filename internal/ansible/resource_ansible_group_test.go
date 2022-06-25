@@ -1,17 +1,20 @@
+//go:build integration
+
 package ansible
 
 import (
 	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/database"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/inventory"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"testing"
 )
 
 func TestAnsibleGroup_Basic(t *testing.T) {
+	resourceName := "ansible_group.master"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t) },
+		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
 		Providers:    testAnsibleProviders,
 		CheckDestroy: testAnsibleGroupDestroy,
 		Steps: []resource.TestStep{
@@ -28,8 +31,9 @@ func TestAnsibleGroup_Basic(t *testing.T) {
 }
 
 func TestAnsibleGroup_Update(t *testing.T) {
+	resourceName := "ansible_group.master"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t) },
+		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
 		Providers:    testAnsibleProviders,
 		CheckDestroy: testAnsibleGroupDestroy,
 		Steps: []resource.TestStep{

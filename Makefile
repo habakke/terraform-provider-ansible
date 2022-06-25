@@ -12,6 +12,7 @@ OS_ARCH            := $(GO_OS)_$(GO_ARCH)
 GIT_BRANCH         :=$(shell git rev-parse --abbrev-ref HEAD)
 GIT_REVISION       :=$(shell git rev-list -1 HEAD)
 GIT_REVISION_DIRTY :=$(shell (git diff-index --quiet HEAD -- . && git diff --staged --quiet -- .) || echo "-dirty")
+GO_LINT_CHECKS     := govet ineffassign staticcheck deadcode unused
 
 .PHONY: prepare lint check sec build-dev build install test testacc fmt release-test release clean
 
@@ -21,15 +22,11 @@ prepare:
 	mkdir -p $(BUILD_DIR)
 
 lint:
-	go get -u golang.org/x/lint/golint
-	$(shell go list -f {{.Target}} golang.org/x/lint/golint) ./...
+	$(GO_LINT_HEAD) $(GO_ENV_VARS) golangci-lint run --disable-all $(foreach check,$(GO_LINT_CHECKS), -E $(check)) $(foreach issue,$(GO_LINT_EXCLUDE_ISSUES), -e $(issue)) $(GO_LINT_TRAIL)
 
-check:
-	go get -u honnef.co/go/tools/cmd/staticcheck
-	$(shell go list -f {{.Target}} honnef.co/go/tools/cmd/staticcheck) ./...
+check: lint test
 
 sec:
-	go get -u github.com/securego/gosec/v2/cmd/gosec
 	$(shell go list -f {{.Target}} github.com/securego/gosec/v2/cmd/gosec) -fmt=golint ./...
 
 build-dev:
@@ -43,11 +40,11 @@ install: build
 	mv $(BUILD_DIR)/$(NAME)_$(VERSION) ~/.terraform.d/plugins/github.com/habakke/ansible/$(VERSION)/$(OS_ARCH)/$(NAME)_$(VERSION)
 
 test: prepare
-	go test -v -coverprofile=$(BUILD_DIR)/cover.out ./...
+	go test -v -tags unit -coverprofile=$(BUILD_DIR)/cover.out ./...
 
 testacc: export TF_ACC=true
 testacc: prepare
-	go test -v -coverprofile=$(BUILD_DIR)/cover.out ./...
+	go test -v -tags integration -coverprofile=$(BUILD_DIR)/cover.out ./...
 
 fmt:
 	go fmt ./...

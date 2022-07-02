@@ -64,9 +64,12 @@ func TestAnsibleHost_Update(t *testing.T) {
 	})
 }
 
-func hostExists(hostID string, inventoryName string, groupID string) bool {
-	i := inventory.LoadFromID(inventoryName)
-	db := database.NewDatabase(i.GetDatabasePath())
+func hostExists(hostID string, rootPath string, inventoryRef string, groupID string) bool {
+	i, err := inventory.Load(rootPath, inventoryRef)
+	if err != nil {
+		return false
+	}
+	db := database.NewDatabase(i.GetInventoryPath())
 	if !db.Exists() {
 		return false
 	}
@@ -93,10 +96,10 @@ func testAnsibleHostDestroy(s *terraform.State) error {
 	}
 
 	if id == nil {
-		return fmt.Errorf("Unable to find host 'k3s-master-1'")
+		return fmt.Errorf("unable to find host 'k3s-master-1'")
 	}
 
-	if hostExists(*id, inventoryRef, groupID) {
+	if hostExists(*id, "/tmp", inventoryRef, groupID) {
 		return fmt.Errorf("host '%s' still exists", *id)
 	}
 
@@ -187,7 +190,7 @@ func testAnsibleHostExists(resource string) resource.TestCheckFunc {
 			return fmt.Errorf("no resource ID is set")
 		}
 
-		if !hostExists(rs.Primary.ID, rs.Primary.Attributes["inventory"], rs.Primary.Attributes["group"]) {
+		if !hostExists(rs.Primary.ID, "/tmp", rs.Primary.Attributes["inventory"], rs.Primary.Attributes["group"]) {
 			return fmt.Errorf("group '%s' does not exist", rs.Primary.ID)
 		}
 		return nil

@@ -57,9 +57,13 @@ func TestAnsibleGroup_Update(t *testing.T) {
 	})
 }
 
-func groupExists(groupID string, inventoryName string) bool {
-	i := inventory.LoadFromID(inventoryName)
-	db := database.NewDatabase(i.GetDatabasePath())
+func groupExists(groupID string, rootPath string, inventoryRef string) bool {
+	i, err := inventory.Load(rootPath, inventoryRef)
+	if err != nil {
+		return false
+	}
+
+	db := database.NewDatabase(i.GetInventoryPath())
 	if !db.Exists() {
 		return false
 	}
@@ -83,7 +87,7 @@ func testAnsibleGroupDestroy(s *terraform.State) error {
 		return fmt.Errorf("Unable to find group 'master'")
 	}
 
-	if groupExists(*gid, inventoryRef) {
+	if groupExists(*gid, "/tmp", inventoryRef) {
 		return fmt.Errorf("group '%s' still exists", *gid)
 	}
 
@@ -151,8 +155,7 @@ func testAnsibleGroupExists(resource string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no resource ID is set")
 		}
-
-		if !groupExists(rs.Primary.ID, rs.Primary.Attributes["inventory"]) {
+		if !groupExists(rs.Primary.ID, "/tmp", rs.Primary.Attributes["inventory"]) {
 			return fmt.Errorf("group '%s' does not exist", rs.Primary.ID)
 
 		}

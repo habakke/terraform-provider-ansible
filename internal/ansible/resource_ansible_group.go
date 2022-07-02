@@ -46,7 +46,10 @@ func ansibleGroupResourceQueryCreate(ctx context.Context, d *schema.ResourceData
 	inventoryRef := d.Get("inventory").(string)
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromID(inventoryRef)
+	i, err := inventory.Load(conf.Path, inventoryRef)
+	if err != nil {
+		return diag.Errorf("failed to load inventory '%s': %s", inventoryRef, err.Error())
+	}
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		return diag.Errorf("failed to load database '%s': %s", inventoryRef, err.Error())
@@ -57,7 +60,7 @@ func ansibleGroupResourceQueryCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Save and export database
-	if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
+	if err := commitAndExport(db, i.GetInventoryPath()); err != nil {
 		return diag.FromErr(err)
 	}
 	conf.Mutex.Unlock()
@@ -76,7 +79,10 @@ func ansibleGroupResourceQueryRead(ctx context.Context, d *schema.ResourceData, 
 	inventoryRef := d.Get("inventory").(string)
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromID(inventoryRef)
+	i, err := inventory.Load(conf.Path, inventoryRef)
+	if err != nil {
+		return diag.Errorf("failed to load inventory '%s': %s", inventoryRef, err.Error())
+	}
 	db, err := i.GetAndLoadDatabase()
 	conf.Mutex.Unlock()
 	if err != nil {
@@ -103,7 +109,10 @@ func ansibleGroupResourceQueryUpdate(ctx context.Context, d *schema.ResourceData
 	inventoryRef := d.Get("inventory").(string)
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromID(inventoryRef)
+	i, err := inventory.Load(conf.Path, inventoryRef)
+	if err != nil {
+		return diag.Errorf("failed to load inventory '%s': %s", inventoryRef, err.Error())
+	}
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to load database")
@@ -120,7 +129,7 @@ func ansibleGroupResourceQueryUpdate(ctx context.Context, d *schema.ResourceData
 		db.UpdateGroup(*g)
 
 		// Save and export database
-		if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
+		if err := commitAndExport(db, i.GetInventoryPath()); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -140,7 +149,10 @@ func ansibleGroupResourceQueryDelete(ctx context.Context, d *schema.ResourceData
 	log.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("deleting group")
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromID(inventoryRef)
+	i, err := inventory.Load(conf.Path, inventoryRef)
+	if err != nil {
+		return diag.Errorf("failed to load inventory '%s': %s", inventoryRef, err.Error())
+	}
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to load database")
@@ -159,7 +171,7 @@ func ansibleGroupResourceQueryDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Save and export database
-	if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
+	if err := commitAndExport(db, i.GetInventoryPath()); err != nil {
 		return diag.FromErr(err)
 	}
 	conf.Mutex.Unlock()

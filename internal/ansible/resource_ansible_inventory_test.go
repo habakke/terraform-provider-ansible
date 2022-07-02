@@ -78,7 +78,7 @@ func testAnsibleInventoryDestroy(s *terraform.State) error {
 			continue
 		}
 
-		if inventory.Exists(rs.Primary.ID) {
+		if inventory.Exists("/tmp", rs.Primary.ID) {
 			return fmt.Errorf("inventory '%s' still exists", rs.Primary.ID)
 		}
 	}
@@ -135,8 +135,7 @@ func testAnsibleInventoryExists(resource string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no resource ID is set")
 		}
-
-		if !inventory.Exists(rs.Primary.ID) {
+		if !inventory.Exists("/tmp", rs.Primary.ID) {
 			return fmt.Errorf("inventory '%s' does not exist", rs.Primary.ID)
 
 		}

@@ -3,6 +3,7 @@ package ansible
 import (
 	"context"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/inventory"
+	"github.com/habakke/terraform-ansible-provider/internal/util"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -38,7 +39,7 @@ func ansibleInventoryResourceQueryCreate(ctx context.Context, d *schema.Resource
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	groupVars := d.Get("group_vars").(string)
+	groupVars := util.ResourceToString(d, "group_vars")
 
 	conf.Mutex.Lock()
 	i := inventory.NewInventory(conf.Path)
@@ -62,10 +63,12 @@ func ansibleInventoryResourceQueryRead(ctx context.Context, d *schema.ResourceDa
 	id := d.Id()
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromID(id)
+	i, err := inventory.Load(conf.Path, id)
+	if err != nil {
+		return diag.Errorf("failed to load inventory '%s': %s", id, err.Error())
+	}
 	groupVars, err := i.Load()
 	if err != nil {
-		log.Error().Err(err).Msg("failed to load inventory")
 		return diag.Errorf("failed to load inventory '%s': %s", id, err.Error())
 	}
 	conf.Mutex.Unlock()
@@ -81,13 +84,15 @@ func ansibleInventoryResourceQueryUpdate(ctx context.Context, d *schema.Resource
 	defer cancel()
 
 	id := d.Id()
-	groupVars := d.Get("group_vars").(string)
+	groupVars := util.ResourceToString(d, "group_vars")
 
-	i := inventory.LoadFromID(id)
+	i, err := inventory.Load(conf.Path, id)
+	if err != nil {
+		return diag.Errorf("failed to load inventory '%s': %s", id, err.Error())
+	}
 	if d.HasChange("group_vars") {
 		conf.Mutex.Lock()
 		if err := i.Commit(groupVars); err != nil {
-			log.Error().Err(err).Msg("failed to update inventory")
 			return diag.Errorf("failed to update inventory: %s", err.Error())
 		}
 		conf.Mutex.Unlock()
@@ -105,9 +110,11 @@ func ansibleInventoryResourceQueryDelete(ctx context.Context, d *schema.Resource
 	id := d.Id()
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromID(id)
+	i, err := inventory.Load(conf.Path, id)
+	if err != nil {
+		return diag.Errorf("failed to load inventory '%s': %s", id, err.Error())
+	}
 	if err := i.Delete(); err != nil {
-		log.Error().Err(err).Msg("failed to delete inventory")
 		return diag.Errorf("failed to delete inventory: %s", err.Error())
 	}
 	conf.Mutex.Unlock()

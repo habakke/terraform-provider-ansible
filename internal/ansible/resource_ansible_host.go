@@ -62,7 +62,10 @@ func ansibleHostResourceQueryCreate(ctx context.Context, d *schema.ResourceData,
 	variables := d.Get("variables").(map[string]interface{})
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromID(inventoryRef)
+	i, err := inventory.Load(conf.Path, inventoryRef)
+	if err != nil {
+		return diag.Errorf("failed to load inventory '%s': %s", inventoryRef, err.Error())
+	}
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to load database")
@@ -79,7 +82,7 @@ func ansibleHostResourceQueryCreate(ctx context.Context, d *schema.ResourceData,
 	db.UpdateGroup(*g)
 
 	// Save and export database
-	if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
+	if err := commitAndExport(db, i.GetInventoryPath()); err != nil {
 		return diag.FromErr(err)
 	}
 	conf.Mutex.Unlock()
@@ -98,7 +101,10 @@ func ansibleHostResourceQueryRead(ctx context.Context, d *schema.ResourceData, m
 	inventoryRef := d.Get("inventory").(string)
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromID(inventoryRef)
+	i, err := inventory.Load(conf.Path, inventoryRef)
+	if err != nil {
+		return diag.Errorf("failed to load inventory '%s': %s", inventoryRef, err.Error())
+	}
 	db, err := i.GetAndLoadDatabase()
 	conf.Mutex.Unlock()
 	if err != nil {
@@ -133,7 +139,10 @@ func ansibleHostResourceQueryUpdate(ctx context.Context, d *schema.ResourceData,
 	variables := d.Get("variables").(map[string]interface{})
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromID(inventoryRef)
+	i, err := inventory.Load(conf.Path, inventoryRef)
+	if err != nil {
+		return diag.Errorf("failed to load inventory '%s': %s", inventoryRef, err.Error())
+	}
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to load database")
@@ -181,7 +190,7 @@ func ansibleHostResourceQueryUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChanges("name", "group", "variables") {
 		// Save and export database
-		if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
+		if err := commitAndExport(db, i.GetInventoryPath()); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -200,7 +209,10 @@ func ansibleHostResourceQueryDelete(ctx context.Context, d *schema.ResourceData,
 	inventoryRef := d.Get("inventory").(string)
 
 	conf.Mutex.Lock()
-	i := inventory.LoadFromID(inventoryRef)
+	i, err := inventory.Load(conf.Path, inventoryRef)
+	if err != nil {
+		return diag.Errorf("failed to load inventory '%s': %s", inventoryRef, err.Error())
+	}
 	db, err := i.GetAndLoadDatabase()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to load database")
@@ -225,7 +237,7 @@ func ansibleHostResourceQueryDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	// Save and export database
-	if err := commitAndExport(db, i.GetDatabasePath()); err != nil {
+	if err := commitAndExport(db, i.GetInventoryPath()); err != nil {
 		return diag.FromErr(err)
 	}
 	conf.Mutex.Unlock()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/database"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/inventory"
+	"github.com/habakke/terraform-ansible-provider/internal/util"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -42,8 +43,8 @@ func ansibleGroupResourceQueryCreate(ctx context.Context, d *schema.ResourceData
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	name := d.Get("name").(string)
-	inventoryRef := d.Get("inventory").(string)
+	name := util.ResourceToString(d, "name")
+	inventoryRef := util.ResourceToString(d, "inventory")
 
 	conf.Mutex.Lock()
 	i, err := inventory.Load(conf.Path, inventoryRef)
@@ -76,7 +77,7 @@ func ansibleGroupResourceQueryRead(ctx context.Context, d *schema.ResourceData, 
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	inventoryRef := d.Get("inventory").(string)
+	inventoryRef := util.ResourceToString(d, "inventory")
 
 	conf.Mutex.Lock()
 	i, err := inventory.Load(conf.Path, inventoryRef)
@@ -105,8 +106,8 @@ func ansibleGroupResourceQueryUpdate(ctx context.Context, d *schema.ResourceData
 	defer cancel()
 
 	id := d.Id()
-	name := d.Get("name").(string)
-	inventoryRef := d.Get("inventory").(string)
+	name := util.ResourceToString(d, "name")
+	inventoryRef := util.ResourceToString(d, "inventory")
 
 	conf.Mutex.Lock()
 	i, err := inventory.Load(conf.Path, inventoryRef)
@@ -144,7 +145,7 @@ func ansibleGroupResourceQueryDelete(ctx context.Context, d *schema.ResourceData
 	_, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	inventoryRef := d.Get("inventory").(string)
+	inventoryRef := util.ResourceToString(d, "inventory")
 
 	log.Debug().Str("id", d.Id()).Str("inventory", inventoryRef).Msg("deleting group")
 

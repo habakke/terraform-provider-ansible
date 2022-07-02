@@ -41,6 +41,14 @@ func ResourceToStringMap(d *schema.ResourceData, name string) map[string]string 
 	return out
 }
 
+func ResourceToInterfaceMap(d *schema.ResourceData, name string) map[string]interface{} {
+	in, ok := d.Get(name).(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	return in
+}
+
 func ResourceToFloat(d *schema.ResourceData, name string) float64 {
 	in, ok := d.Get(name).(string)
 	if !ok {

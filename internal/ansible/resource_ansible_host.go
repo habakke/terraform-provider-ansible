@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/database"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/inventory"
+	"github.com/habakke/terraform-ansible-provider/internal/util"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -56,10 +57,10 @@ func ansibleHostResourceQueryCreate(ctx context.Context, d *schema.ResourceData,
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	name := d.Get("name").(string)
-	groupID := d.Get("group").(string)
-	inventoryRef := d.Get("inventory").(string)
-	variables := d.Get("variables").(map[string]interface{})
+	name := util.ResourceToString(d, "name")
+	groupID := util.ResourceToString(d, "group")
+	inventoryRef := util.ResourceToString(d, "inventory")
+	variables := util.ResourceToInterfaceMap(d, "variables")
 
 	conf.Mutex.Lock()
 	i, err := inventory.Load(conf.Path, inventoryRef)
@@ -98,7 +99,7 @@ func ansibleHostResourceQueryRead(ctx context.Context, d *schema.ResourceData, m
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	inventoryRef := d.Get("inventory").(string)
+	inventoryRef := util.ResourceToString(d, "inventory")
 
 	conf.Mutex.Lock()
 	i, err := inventory.Load(conf.Path, inventoryRef)
@@ -133,10 +134,10 @@ func ansibleHostResourceQueryUpdate(ctx context.Context, d *schema.ResourceData,
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	name := d.Get("name").(string)
-	groupID := d.Get("group").(string)
-	inventoryRef := d.Get("inventory").(string)
-	variables := d.Get("variables").(map[string]interface{})
+	name := util.ResourceToString(d, "name")
+	groupID := util.ResourceToString(d, "group")
+	inventoryRef := util.ResourceToString(d, "inventory")
+	variables := util.ResourceToInterfaceMap(d, "variables")
 
 	conf.Mutex.Lock()
 	i, err := inventory.Load(conf.Path, inventoryRef)
@@ -206,7 +207,7 @@ func ansibleHostResourceQueryDelete(ctx context.Context, d *schema.ResourceData,
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	inventoryRef := d.Get("inventory").(string)
+	inventoryRef := util.ResourceToString(d, "inventory")
 
 	conf.Mutex.Lock()
 	i, err := inventory.Load(conf.Path, inventoryRef)

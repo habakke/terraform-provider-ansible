@@ -46,3 +46,9 @@ resource "ansible_host" "k3s-master-1" {
   }
 }
 ```
+
+## Release notes
+
+### 2.0.0 
+* Breaking changes since previous version where the new version expects the provider path to be the root
+path where the inventory will be crated. To use multiple inventories, use provider aliases.

@@ -1,7 +1,7 @@
 NAME       := terraform-provider-ansible
 ROOT_DIR   := $(if $(ROOT_DIR),$(ROOT_DIR),$(shell git rev-parse --show-toplevel))
 BUILD_DIR  := $(ROOT_DIR)/dist
-VERSION    := $(shell git describe --tags --dirty)
+VERSION    := $(shell cat VERSION)
 GITSHA     := $(shell git rev-parse --short HEAD)
 
 

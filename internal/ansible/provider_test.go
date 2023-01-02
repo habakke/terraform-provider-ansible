@@ -1,43 +1,35 @@
 package ansible
 
 import (
-	"github.com/habakke/terraform-ansible-provider/internal/util"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var testAnsibleProviders map[string]*schema.Provider
-var testAnsibleProvider *schema.Provider
+var providerFactories = map[string]func() (*schema.Provider, error){
+	"ansible": func() (*schema.Provider, error) {
+		return New(), nil
+	},
+}
 
 func TestMain(m *testing.M) {
-	util.ConfigureLogging(util.GetEnv("LOGLEVEL", "info"), true)
-	code := m.Run()
-	os.Exit(code)
+	if os.Getenv("TF_ACC") == "" {
+		os.Exit(m.Run())
+	}
+	resource.TestMain(m)
 }
 
 func init() {
-
-	testAnsibleProvider = Provider()
-	testAnsibleProviders = map[string]*schema.Provider{
-		"ansible": testAnsibleProvider,
-	}
 }
 
 //nolint:deadcode,unused
 func testAnsiblePreCheck(t *testing.T, resourceName string) {
-	r := testAnsibleProvider.ResourcesMap[strings.Split(resourceName, ".")[0]]
-	d := testAnsibleProvider.DataSourcesMap[strings.Split(resourceName, ".")[0]]
-
-	if r != nil && d != nil {
-		t.Fatalf("missing resource '%s'", resourceName)
-	}
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider().InternalValidate(); err != nil {
+	if err := New().InternalValidate(); err != nil {
 		t.Fatalf("provider internal validation failed: %v", err)
 	}
 }

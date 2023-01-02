@@ -16,6 +16,11 @@ type providerConfiguration struct {
 
 // Provider represents a terraform provider definition
 func Provider() *schema.Provider {
+	return New()
+}
+
+// New represents a terraform provider definition
+func New() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"path": {
@@ -45,10 +50,6 @@ func Provider() *schema.Provider {
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
-
-	// configure logging
-	logCaller := util.ResourceToBool(d, "log_caller")
-	util.ConfigureTerraformProviderLogging(logCaller)
 
 	// load provider config vars
 	path := util.ResourceToString(d, "path")

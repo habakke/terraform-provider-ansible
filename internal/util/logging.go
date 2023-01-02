@@ -19,7 +19,7 @@ func GetEnv(key, fallback string) string {
 }
 
 func ConfigureLogging(logLevel string, logCaller bool) {
-	l, err := zerolog.ParseLevel(logLevel)
+	l, err := zerolog.ParseLevel(strings.ToLower(logLevel))
 	if err != nil {
 		l = zerolog.InfoLevel
 	}
@@ -33,8 +33,12 @@ func ConfigureLogging(logLevel string, logCaller bool) {
 
 // ConfigureTerraformProviderLogging configures zerolog according to the format expected by terraform
 // according to https://www.terraform.io/docs/extend/debugging.html#log-based-debugging
-func ConfigureTerraformProviderLogging(logCaller bool) {
-	zerolog.SetGlobalLevel(zerolog.TraceLevel)
+func ConfigureTerraformProviderLogging(logLevel string, logCaller bool) {
+	l, err := zerolog.ParseLevel(strings.ToLower(logLevel))
+	if err != nil {
+		l = zerolog.InfoLevel
+	}
+	zerolog.SetGlobalLevel(l)
 	output := zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339, NoColor: true, PartsExclude: []string{zerolog.TimestampFieldName}}
 	output.FormatLevel = func(i interface{}) string {
 		return strings.ToUpper(fmt.Sprintf("[%s]", i))

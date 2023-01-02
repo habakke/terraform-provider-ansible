@@ -14,9 +14,9 @@ import (
 func TestAnsibleGroup_Basic(t *testing.T) {
 	resourceName := "ansible_group.master"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
-		Providers:    testAnsibleProviders,
-		CheckDestroy: testAnsibleGroupDestroy,
+		PreCheck:          func() { testAnsiblePreCheck(t, resourceName) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAnsibleGroupDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAnsibleGroupBasic(),
@@ -33,9 +33,9 @@ func TestAnsibleGroup_Basic(t *testing.T) {
 func TestAnsibleGroup_Update(t *testing.T) {
 	resourceName := "ansible_group.master"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
-		Providers:    testAnsibleProviders,
-		CheckDestroy: testAnsibleGroupDestroy,
+		PreCheck:          func() { testAnsiblePreCheck(t, resourceName) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAnsibleGroupDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAnsibleGroupBasic(),
@@ -84,10 +84,9 @@ func testAnsibleGroupDestroy(s *terraform.State) error {
 	}
 
 	if gid == nil {
-		return fmt.Errorf("Unable to find group 'master'")
+		return fmt.Errorf("unable to find group 'master'")
 	}
-
-	if groupExists(*gid, "/tmp", inventoryRef) {
+	if groupExists(*gid, "/tmp/inventory", inventoryRef) {
 		return fmt.Errorf("group '%s' still exists", *gid)
 	}
 
@@ -97,7 +96,7 @@ func testAnsibleGroupDestroy(s *terraform.State) error {
 func testAnsibleGroupBasic() string {
 	return `
 provider "ansible" {
-  path = "/tmp"
+  path = "/tmp/inventory"
 }
 
 resource "ansible_inventory" "cluster" {
@@ -123,7 +122,7 @@ resource "ansible_group" "master" {
 func testAnsibleGroupUpdate() string {
 	return `
 provider "ansible" {
-  path = "/tmp"
+  path = "/tmp/inventory"
 }
 
 resource "ansible_inventory" "cluster" {
@@ -155,7 +154,9 @@ func testAnsibleGroupExists(resource string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no resource ID is set")
 		}
-		if !groupExists(rs.Primary.ID, "/tmp", rs.Primary.Attributes["inventory"]) {
+
+		inventoryRef := rs.Primary.Attributes["inventory"]
+		if !groupExists(rs.Primary.ID, "/tmp/inventory", inventoryRef) {
 			return fmt.Errorf("group '%s' does not exist", rs.Primary.ID)
 
 		}

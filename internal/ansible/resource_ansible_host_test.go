@@ -12,9 +12,9 @@ import (
 func TestAnsibleHost_Basic(t *testing.T) {
 	resourceName := "ansible_host.k3s-master-1"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
-		Providers:    testAnsibleProviders,
-		CheckDestroy: testAnsibleHostDestroy,
+		PreCheck:          func() { testAnsiblePreCheck(t, resourceName) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAnsibleHostDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAnsibleHostBasic(),
@@ -34,9 +34,9 @@ func TestAnsibleHost_Basic(t *testing.T) {
 func TestAnsibleHost_Update(t *testing.T) {
 	resourceName := "ansible_host.k3s-master-1"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
-		Providers:    testAnsibleProviders,
-		CheckDestroy: testAnsibleHostDestroy,
+		PreCheck:          func() { testAnsiblePreCheck(t, resourceName) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAnsibleHostDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAnsibleHostBasic(),
@@ -99,7 +99,7 @@ func testAnsibleHostDestroy(s *terraform.State) error {
 		return fmt.Errorf("unable to find host 'k3s-master-1'")
 	}
 
-	if hostExists(*id, "/tmp", inventoryRef, groupID) {
+	if hostExists(*id, "/tmp/inventory", inventoryRef, groupID) {
 		return fmt.Errorf("host '%s' still exists", *id)
 	}
 
@@ -109,7 +109,7 @@ func testAnsibleHostDestroy(s *terraform.State) error {
 func testAnsibleHostBasic() string {
 	return `
 provider "ansible" {
-  path = "/tmp"
+  path = "/tmp/inventory"
 }
 
 resource "ansible_inventory" "cluster" {
@@ -146,7 +146,7 @@ resource "ansible_host" "k3s-master-1" {
 func testAnsibleHostUpdate() string {
 	return `
 provider "ansible" {
-  path = "/tmp"
+  path = "/tmp/inventory"
 }
 
 resource "ansible_inventory" "cluster" {
@@ -190,7 +190,7 @@ func testAnsibleHostExists(resource string) resource.TestCheckFunc {
 			return fmt.Errorf("no resource ID is set")
 		}
 
-		if !hostExists(rs.Primary.ID, "/tmp", rs.Primary.Attributes["inventory"], rs.Primary.Attributes["group"]) {
+		if !hostExists(rs.Primary.ID, "/tmp/inventory", rs.Primary.Attributes["inventory"], rs.Primary.Attributes["group"]) {
 			return fmt.Errorf("group '%s' does not exist", rs.Primary.ID)
 		}
 		return nil

@@ -1,7 +1,7 @@
 NAME       := terraform-provider-ansible
 ROOT_DIR   := $(if $(ROOT_DIR),$(ROOT_DIR),$(shell git rev-parse --show-toplevel))
 BUILD_DIR  := $(ROOT_DIR)/dist
-VERSION    := $(shell cat VERSION)
+VERSION    := $(shell git describe --tags --dirty)
 GITSHA     := $(shell git rev-parse --short HEAD)
 
 
@@ -31,10 +31,10 @@ sec:
 	$(shell go list -f {{.Target}} github.com/securego/gosec/v2/cmd/gosec) -fmt=golint ./...
 
 build-dev:
-	go build -ldflags "-X main.commit=$(GIT_BRANCH)@$(GIT_REVISION)$(GIT_REVISION_DIRTY) -X main.buildTime=$(BUILD_TIME) -X main.version=$(VERSION) -X main.buildBy=${USER}" -o ~/.terraform.d/plugins/$(NAME)_$(VERSION) .
+	go build -ldflags "-X main.commit=$(GIT_BRANCH)@$(GIT_REVISION)$(GIT_REVISION_DIRTY) -X main.buildTime=$(BUILD_TIME) -X main.version=$(VERSION) -X main.builtBy=${USER}" -o ~/.terraform.d/plugins/$(NAME)_$(VERSION) .
 
 build: prepare
-	go build -ldflags "-X main.commit=$(GIT_BRANCH)@$(GIT_REVISION)$(GIT_REVISION_DIRTY) -X main.buildTime=$(BUILD_TIME) -X main.version=$(VERSION) -X main.buildBy=${USER}" -o $(BUILD_DIR)/$(NAME)_$(VERSION) .
+	go build -ldflags "-X main.commit=$(GIT_BRANCH)@$(GIT_REVISION)$(GIT_REVISION_DIRTY) -X main.buildTime=$(BUILD_TIME) -X main.version=$(VERSION) -X main.builtBy=${USER}" -o $(BUILD_DIR)/$(NAME)_$(VERSION) .
 
 install: build
 	mkdir -p ~/.terraform.d/plugins/github.com/habakke/ansible/$(VERSION)/$(OS_ARCH)

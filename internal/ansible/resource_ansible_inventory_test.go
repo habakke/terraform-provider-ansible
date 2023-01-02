@@ -29,9 +29,9 @@ extra_agent_args: ""
 func TestAnsibleInventory_Basic(t *testing.T) {
 	resourceName := "ansible_inventory.cluster"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
-		Providers:    testAnsibleProviders,
-		CheckDestroy: testAnsibleInventoryDestroy,
+		PreCheck:          func() { testAnsiblePreCheck(t, resourceName) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAnsibleInventoryDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAnsibleInventoryBasic(),
@@ -48,9 +48,9 @@ func TestAnsibleInventory_Basic(t *testing.T) {
 func TestAnsibleInventory_Update(t *testing.T) {
 	resourceName := "ansible_inventory.cluster"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAnsiblePreCheck(t, resourceName) },
-		Providers:    testAnsibleProviders,
-		CheckDestroy: testAnsibleInventoryDestroy,
+		PreCheck:          func() { testAnsiblePreCheck(t, resourceName) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAnsibleInventoryDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAnsibleInventoryBasic(),
@@ -78,7 +78,7 @@ func testAnsibleInventoryDestroy(s *terraform.State) error {
 			continue
 		}
 
-		if inventory.Exists("/tmp", rs.Primary.ID) {
+		if inventory.Exists("/tmp/inventory", rs.Primary.ID) {
 			return fmt.Errorf("inventory '%s' still exists", rs.Primary.ID)
 		}
 	}
@@ -89,7 +89,7 @@ func testAnsibleInventoryDestroy(s *terraform.State) error {
 func testAnsibleInventoryBasic() string {
 	return `
 provider "ansible" {
-  path = "/tmp"
+  path = "/tmp/inventory"
 }
 
 resource "ansible_inventory" "cluster" {
@@ -109,7 +109,7 @@ resource "ansible_inventory" "cluster" {
 func testAnsibleInventoryUpdate() string {
 	return `
 provider "ansible" {
-  path = "/tmp"
+  path = "/tmp/inventory"
 }
 
 resource "ansible_inventory" "cluster" {
@@ -135,7 +135,7 @@ func testAnsibleInventoryExists(resource string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no resource ID is set")
 		}
-		if !inventory.Exists("/tmp", rs.Primary.ID) {
+		if !inventory.Exists("/tmp/inventory", rs.Primary.ID) {
 			return fmt.Errorf("inventory '%s' does not exist", rs.Primary.ID)
 
 		}

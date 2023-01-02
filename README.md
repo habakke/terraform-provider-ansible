@@ -47,6 +47,11 @@ resource "ansible_host" "k3s-master-1" {
 }
 ```
 
+### Multiple Provider Configurations
+You can optionally define multiple configurations for the same provider, and select which one to use on a per-resource or per-module basis. The primary reason for this is to support multiple regions for a cloud platform; other examples include targeting multiple Docker hosts, multiple Consul hosts, etc.
+
+To create multiple configurations for a given provider, include multiple provider blocks with the same provider name. For each additional non-default configuration, use the alias meta-argument to provide an extra name segment
+
 ## How to build
 To build an test the plugin locally first create a `~/.terraformrc` file
 

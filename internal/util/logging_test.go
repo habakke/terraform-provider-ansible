@@ -7,7 +7,7 @@ import (
 )
 
 func TestTerraformProviderLoggingFormat(t *testing.T) {
-	ConfigureTerraformProviderLogging(true)
+	ConfigureTerraformProviderLogging("trace", true)
 
 	log.Error().Err(fmt.Errorf("test error message")).Msg("This is an error level message")
 	log.Info().Msg("This is an info level message")

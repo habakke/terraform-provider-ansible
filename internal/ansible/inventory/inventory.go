@@ -3,64 +3,69 @@ package inventory
 import (
 	"fmt"
 	"github.com/habakke/terraform-ansible-provider/internal/ansible/database"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // Inventory represents an Ansible inventory
 type Inventory struct {
 	id            string
 	rootPath      string
-	fullPath      string
 	groupVarsFile string
 }
 
 // Exists checks if an inventory with the given ID already exists
 func Exists(rootPath string, id string) bool {
-	_, err := os.Stat(getFullPath(rootPath, id))
-	return err == nil
+	_, err := os.Stat(rootPath)
+	if err != nil {
+		return false
+	}
+	actualID, err := getId(rootPath)
+	if err != nil {
+		return false
+	}
+	if actualID != id {
+		return false
+	}
+	return true
 }
 
 // NewInventory creates a new inventory at the given rootPath
 func NewInventory(rootPath string) Inventory {
-	id := fmt.Sprintf("inventory%s%s", string(os.PathSeparator), database.NewIdentity().GetID())
 	return Inventory{
-		id:            id,
+		id:            database.NewIdentity().GetID(),
 		rootPath:      filepath.Clean(rootPath),
-		fullPath:      fmt.Sprintf("%s%s%s", filepath.Clean(rootPath), string(os.PathSeparator), id),
 		groupVarsFile: fmt.Sprintf("%s%sall.yml", GetGroupVarsPath(rootPath, "all"), string(os.PathSeparator)),
 	}
 }
 
-func checkId(id string) error {
-	parts := strings.Split(filepath.Clean(id), string(os.PathSeparator))
-	if parts[0] != "inventory" {
-		return fmt.Errorf("invalid id, missing inventory part")
-	}
-	if len(parts) != 2 {
-		return fmt.Errorf("incorrect id, does not contain enough rootPath elements")
-	}
-	return nil
+func writeId(rootPath string, id string) error {
+	return os.WriteFile(fmt.Sprintf("%s/id", filepath.Clean(rootPath)), []byte(id), os.ModePerm)
 }
 
-func getFullPath(rootPath string, id string) string {
-	return fmt.Sprintf("%s%s%s", filepath.Clean(rootPath), string(os.PathSeparator), id)
+func getId(rootPath string) (string, error) {
+	data, err := os.ReadFile(fmt.Sprintf("%s/id", filepath.Clean(rootPath)))
+	if err != nil {
+		return "", err
+	}
+	return string(data), err
 }
 
 // Load loads an inventory from disk
 func Load(rootPath string, id string) (*Inventory, error) {
-	if err := checkId(id); err != nil {
+	actualID, err := getId(rootPath)
+	if err != nil {
 		return nil, err
 	}
-	if _, err := os.Stat(getFullPath(rootPath, id)); os.IsExist(err) {
-		return nil, fmt.Errorf("inventory not found at the expected location '%s': %s", getFullPath(rootPath, id), err.Error())
+	if _, err := os.Stat(rootPath); os.IsExist(err) {
+		return nil, fmt.Errorf("inventory not found at the expected location '%s': %s", rootPath, err.Error())
+	}
+	if actualID != id {
+		return nil, fmt.Errorf("inventory found, but ID is incorrect (id=%s, actualID=%s)", id, actualID)
 	}
 	return &Inventory{
 		id:            id,
 		rootPath:      filepath.Clean(rootPath),
-		fullPath:      getFullPath(rootPath, id),
 		groupVarsFile: fmt.Sprintf("%s%sall.yml", GetGroupVarsPath(rootPath, "all"), string(os.PathSeparator)),
 	}, nil
 }
@@ -70,14 +75,9 @@ func (s *Inventory) GetID() string {
 	return s.id
 }
 
-// GetRootPath returns the root path where the inventories are stored
-func (s *Inventory) GetRootPath() string {
-	return s.rootPath
-}
-
 // GetInventoryPath returns the path to this specific inventory
 func (s *Inventory) GetInventoryPath() string {
-	return s.fullPath
+	return s.rootPath
 }
 
 // GetGroupVarsPath returns the rootPath to the group_vars folder for an ansible group in the inventory
@@ -104,7 +104,7 @@ func (s *Inventory) Load() (string, error) {
 		return "", fmt.Errorf("failed to load inventory because groupvars files doesn't exist: %s", err.Error())
 	}
 
-	if data, err := ioutil.ReadFile(s.groupVarsFile); err != nil {
+	if data, err := os.ReadFile(s.groupVarsFile); err != nil {
 		return "", err
 	} else {
 		return string(data), nil
@@ -119,24 +119,21 @@ func (s *Inventory) Commit(groupVars string) error {
 	if err := os.MkdirAll(GetGroupVarsPath(s.rootPath, "all"), os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create inventory group_vars rootPath: %s", err.Error())
 	}
-
-	if err := ioutil.WriteFile(s.groupVarsFile, []byte(groupVars), os.ModePerm); err != nil {
+	if err := writeId(s.rootPath, s.id); err != nil {
+		return fmt.Errorf("failed to write inventory id: %s", err.Error())
+	}
+	if err := os.WriteFile(s.groupVarsFile, []byte(groupVars), os.ModePerm); err != nil {
 		return fmt.Errorf("failed to commit inventory to file: %s", err.Error())
 	}
-
 	return nil
 }
 
-func (s Inventory) getInventoryBasePath() string {
-	return fmt.Sprintf("%s%sinventory", s.rootPath, string(os.PathSeparator))
-}
-
 func (s Inventory) deleteInventory() error {
-	if _, err := os.Stat(s.getInventoryBasePath()); os.IsNotExist(err) {
+	if _, err := os.Stat(s.rootPath); os.IsNotExist(err) {
 		return nil
 	}
 
-	if err := os.RemoveAll(s.getInventoryBasePath()); err != nil {
+	if err := os.RemoveAll(s.rootPath); err != nil {
 		return fmt.Errorf("failed to delete inventory: %s", err.Error())
 	}
 	return nil
